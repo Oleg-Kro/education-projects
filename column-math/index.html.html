@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Запись примеров столбиком</title>
+
+<style>
+:root{--bg:#e2e8f0;--panel:#fff;--tx:#1e293b;--mut:#64748b;--hd:#94a3b8;--bd:#cbd5e1;--bb:#cbd5e1;--ac:#4f46e5;--acx:#fff;--btn:#fff;--hov:#f1f5f9;--onbg:#e0e7ff;--onbd:#6366f1;--ontx:#4338ca}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--panel:#1e293b;--tx:#e2e8f0;--mut:#94a3b8;--hd:#94a3b8;--bd:#334155;--bb:#475569;--ac:#6366f1;--acx:#fff;--btn:#273449;--hov:#334155;--onbg:#3730a3;--onbd:#818cf8;--ontx:#fff}}
+:root[data-theme="dark"]{--bg:#0f172a;--panel:#1e293b;--tx:#e2e8f0;--mut:#94a3b8;--hd:#94a3b8;--bd:#334155;--bb:#475569;--ac:#6366f1;--acx:#fff;--btn:#273449;--hov:#334155;--onbg:#3730a3;--onbd:#818cf8;--ontx:#fff}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;height:100vh;display:flex;flex-direction:column;font:13px system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--tx)}
+[hidden]{display:none!important}
+button{font:inherit;padding:5px 8px;border:1px solid var(--bb);background:var(--btn);color:var(--tx);border-radius:7px;cursor:pointer}
+button:hover{background:var(--hov)}button:active{transform:scale(.97)}button:disabled{opacity:.4;cursor:default}
+button.on{background:var(--onbg);border-color:var(--onbd);color:var(--ontx)}
+.pri{background:var(--ac);color:var(--acx);border-color:var(--ac)}.pri:hover{background:#4338ca;color:#fff}
+/* шапка */
+.top{flex:none;background:var(--panel);border-bottom:1px solid var(--bd);position:relative;z-index:20}
+.toolbar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;padding:8px 10px}
+.toolbar h1{font-size:14.5px;line-height:1.1;margin:0 auto 0 0;max-width:150px}
+@media (min-width:1500px){.toolbar h1{max-width:none;white-space:nowrap}}
+.toolbar h1 small{font-weight:400;color:var(--mut)}
+.toolbar>button,.toolbar .pop>button{padding:5px 5px;font-size:12.5px}
+#undo,#redo{padding:6px 9px;font-size:13.5px}
+.vsep{width:1px;height:24px;background:var(--bb);margin:0 8px 0 6px}
+.zoom{display:flex;align-items:center;gap:3px}.zoom button{padding:5px 5px;min-width:24px;font-size:12.5px}
+.tb2{border-top:1px solid var(--bd);padding:5px 12px;gap:6px}
+.mini{display:flex;align-items:center;gap:5px;flex-wrap:wrap;border:1px solid var(--bd);border-radius:9px;padding:3px 7px}
+.ml{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.02em;color:var(--hd)}
+.il{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--mut)}
+.il input[type=number]{width:44px;padding:3px 4px}
+.btns{display:flex;gap:3px;flex-wrap:wrap}.tb2 button{padding:4px 7px}
+.mini .seg{width:auto}.mini .seg button{flex:none;padding:4px 9px}
+.pop{position:relative}
+.popbox{position:absolute;top:calc(100% + 6px);left:0;width:290px;max-width:92vw;background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:12px;box-shadow:0 8px 24px #0003;z-index:30}
+.popbox.right{left:auto;right:0}.popbox h2:first-child{margin-top:0}
+/* основная область */
+.app{flex:1;display:flex;min-height:0}
+.app.rt{flex-direction:row-reverse}
+.panel{width:270px;flex:none;background:var(--panel);border-right:1px solid var(--bd);padding:10px;overflow:auto;display:flex;flex-direction:column}
+.app.rt .panel{border-right:0;border-left:1px solid var(--bd)}
+.panel h2,.popbox h2{font-size:11px;text-transform:uppercase;color:var(--hd);margin:10px 0 4px}
+.panel>h2:first-child{margin-top:0}
+.shbox{margin-top:auto;padding-top:6px}
+main{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 14px 10px}
+.sheetbox{flex:1 1 auto;min-height:0;overflow:auto;display:flex}
+canvas{display:block;flex:none;margin:auto;background:#fff;box-shadow:0 4px 16px #0003}
+.statusbar{flex:none;align-self:center;max-width:100%;margin-top:8px;background:var(--tx);color:var(--panel);border-radius:99px;padding:4px 16px;font-size:12px;line-height:1.35;white-space:nowrap;overflow:hidden}
+.statusbar span{display:block;overflow:hidden;text-overflow:ellipsis;text-align:center}
+@media (max-width:759px){body{height:auto;min-height:100vh}.app,.app.rt{flex-direction:column}.panel,.app.rt .panel{width:auto;border:0;border-bottom:1px solid var(--bd);overflow:visible}.sheetbox{overflow:visible}}
+/* элементы боковой панели */
+.sw{display:flex;gap:6px}.sw button{flex:1;height:28px;padding:0;border-radius:8px;border:2px solid var(--bd)}.sw button.on{outline:3px solid var(--onbd);outline-offset:1px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.g4 button{font-size:12px;padding:5px 2px}
+.tabs{display:flex;flex-wrap:wrap;gap:4px}.tabs button{min-width:34px}
+.seg.wrap{flex-wrap:wrap}.seg.wrap button{flex:1 1 45%}
+.seg{display:flex;gap:4px}.seg button{flex:1;padding:6px 2px;font-size:12.5px}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:6px}
+.keys button{font-size:22px;font-weight:600;padding:0;height:46px}
+.keys button:hover{background:var(--hov)}.keys button.sm{font-size:11px;font-weight:500}
+select,input[type=number],textarea{width:100%;font:inherit;padding:6px;border:1px solid var(--bb);border-radius:7px;background:var(--btn);color:var(--tx)}
+textarea{resize:vertical}
+.row{display:flex;gap:8px;margin-bottom:6px}.row label{flex:1;font-size:12.5px;color:var(--mut)}
+label.ck{display:flex;gap:7px;align-items:center;font-size:13px;margin:3px 0}
+.mut{color:var(--mut);font-size:12px;margin:0 0 8px;line-height:1.4}
+/* окна */
+.modal{position:fixed;inset:0;background:#0006;z-index:50;display:flex;align-items:center;justify-content:center;padding:12px}
+.mbox{background:var(--panel);color:var(--tx);border-radius:12px;padding:20px;max-width:700px;width:100%;max-height:85vh;overflow:auto;line-height:1.5}
+.hbody{font-size:14px;line-height:1.5;margin-top:6px}.hbody h4{margin:16px 0 4px;font-size:15px}.hbody p,.hbody li{margin:4px 0}.hbody ul,.hbody ol{padding-left:20px;margin:4px 0}
+#tools{flex-wrap:wrap}#tools button[data-t="t"]{flex:1 1 100%}
+#txed{position:fixed;z-index:45;width:300px;max-width:94vw;background:var(--panel);color:var(--tx);border:1px solid var(--bd);border-radius:12px;padding:10px;box-shadow:0 8px 24px #0004}
+#tin{width:100%;font:inherit;font-size:15px;padding:7px;border:1px solid var(--bb);border-radius:7px;background:var(--btn);color:var(--tx)}
+.chips{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0}.chips button{padding:3px 8px;font-size:12px}
+.row3{display:flex;gap:6px;margin-top:6px}.row3 button{flex:1}
+</style>
+</head>
+<body>
+<div class="top" id="top">
+<header class="toolbar">
+  <h1>Запись примеров столбиком <small id="fmt" title="Формат листа">· А5</small></h1>
+  <div class="pop"><button id="genBtn">🎲 Дай пример ▾</button>
+    <div class="popbox right" id="genBox" hidden>
+  <div class="row"><label>Действие<select id="gop"><option value="+">Сложение +</option><option value="−">Вычитание −</option><option value="×">Умножение ×</option><option value=":">Деление :</option></select></label></div>
+  <div class="row"><label>Цифр в 1-м числе<select id="gn1"><option>2</option><option selected>3</option><option>4</option><option>5</option></select></label><label>Цифр во 2-м<select id="gn2"><option>1</option><option selected>2</option><option>3</option><option>4</option></select></label></div>
+  <label class="ck"><input type="checkbox" id="gcar" checked> С переходом через разряд (перенос, заём)</label>
+      <button id="gen" style="width:100%">Поставить пример</button>
+  <p class="mut" style="margin:6px 0 0">Пример встанет в клетку курсора. При делении числа — это делимое и делитель, делится без остатка.</p>
+    </div></div>
+  <div class="zoom" title="Масштаб листа"><button id="zo" title="Мельче">−</button><button id="z1" title="Сбросить масштаб">100%</button><button id="zi" title="Крупнее">+</button></div>
+  <button id="undo" title="Ctrl+Z">↶ Отменить</button><button id="redo" title="Ctrl+Y">↷ Вернуть</button>
+  <span class="vsep"></span>
+  <button id="clear">Очистить</button><button id="fs" title="Сохранить всю работу (все листы) в файл">💾 Сохранить</button><button id="fo" title="Открыть ранее сохранённую работу">📂 Открыть</button><input type="file" id="ff" accept=".json,application/json" hidden>
+  <button id="cp">Копировать для Word</button><button id="pf">PDF</button><button id="pr">Печать</button><button id="dl" class="pri">Скачать PNG</button>
+  <div class="pop"><button id="viewBtn">Вид ▾</button>
+    <div class="popbox right keep" id="viewBox" hidden>
+      <h2>Боковая панель с цифрами</h2>
+      <div class="seg" id="sideSeg"><button data-v="left">Слева</button><button data-v="right" class="on">Справа</button></div>
+      <h2>Формат листа</h2>
+      <div class="seg" id="fmtSeg"><button data-v="A5">А5</button><button data-v="A4">А4</button></div>
+      <h2>Красное поле на листе</h2>
+      <div class="seg wrap" id="fieldSeg"><button data-v="right">Справа</button><button data-v="left">Слева</button><button data-v="both">Справа и слева</button><button data-v="none">Нет поля</button></div>
+      <h2>Тема оформления</h2>
+      <div class="seg" id="themeSeg"><button data-v="light">Светлая</button><button data-v="dark">Тёмная</button></div>
+      <p class="mut" style="margin:8px 0 0">Тетрадный лист всегда остаётся светлым.</p>
+    </div></div>
+  <button id="helpBtn" title="Инструкция">?</button>
+</header>
+<div class="toolbar tb2">
+  <div class="mini"><span class="ml">Шаблон</span>
+    <label class="il">Цифр в 1-м числе<input type="number" id="wa" value="4" min="1" max="26"></label>
+    <label class="il">Цифр в делителе<input type="number" id="wb" value="2" min="1" max="12"></label>
+    <div class="btns" id="ops"><button data-op="+">+ Сложение</button><button data-op="−">− Вычитание</button><button data-op="×">× Умножение</button><button data-op=":">: Деление</button></div>
+    <div class="pop"><button id="strBtn">⌨ Ввод строкой ▾</button>
+      <div class="popbox keep" id="strBox" hidden>
+        <div class="mut" style="margin:0 0 4px">Пример (несколько — каждый с новой строки)</div>
+        <textarea id="strTx" rows="4" placeholder="345+78&#10;502-187&#10;46*23&#10;1344:12"></textarea>
+        <div class="g2" style="margin-top:6px"><button id="strNl">↵ Новая строка</button><button id="strClr">Очистить</button></div>
+        <button id="strGo" style="width:100%;margin-top:6px">Разложить на листе</button>
+        <p class="mut" style="margin:6px 0 0">Цифры и знаки можно набирать клавиатурой или кнопками боковой панели. Знаки: + − × : (с клавиатуры можно - * /). Enter — разложить. Числа встанут от клетки курсора, знак и черты поставятся сами, а ответ пишете вы.</p>
+      </div></div>
+  </div>
+  <div class="mini"><span class="ml">После ввода идти</span>
+    <div class="seg" id="dirs"><button data-d="r" class="on">→</button><button data-d="l">←</button><button data-d="d">↓</button><button data-d="u">↑</button></div>
+  </div>
+</div>
+</div>
+<div class="app" id="app">
+<aside class="panel">
+  <h2>Инструмент</h2>
+  <div class="seg" id="tools"><button data-t="w" class="on">Писать</button><button data-t="l">Черта</button><button data-t="e">Ластик</button><button data-t="s">Выделить</button><button data-t="t">Надпись</button></div>
+  <div class="g4" style="margin-top:6px"><button id="sc" disabled>Копир.</button><button id="sx" disabled>Вырез.</button><button id="sp" disabled>Вставить</button><button id="sd" disabled>Стереть</button></div>
+  <h2>Цвет</h2><div class="sw" id="sw"></div>
+  <div class="keys" id="keys"></div>
+  <label class="ck"><input type="checkbox" id="sm"> Малая цифра (перенос / заём)</label>
+  <label class="ck"><input type="checkbox" id="hc" checked> Подсвечивать столбец</label>
+  <label class="ck"><input type="checkbox" id="al" checked> Авточерта под знаком</label>
+  <button id="strike" style="width:100%">Зачеркнуть цифру</button>
+  <button id="rot" style="width:100%;margin-top:6px">Повернуть: альбомный лист</button>
+  <div class="shbox"><h2>Листы</h2><div class="tabs" id="tabs"></div><button id="dsh" style="width:100%;margin-top:6px">Удалить этот лист</button></div>
+</aside>
+<main id="main"><div class="sheetbox"><canvas id="cv"></canvas></div>
+<div class="statusbar" id="sb"><span id="msg">Нажмите на клетку и вводите цифры. Подсказки — здесь.</span></div></main>
+</div>
+<div id="txed" hidden>
+  <div class="mut" style="margin:0 0 4px">Надпись на листе</div>
+  <input id="tin" type="text" maxlength="90" placeholder="Введите текст" autocomplete="off">
+  <div class="chips" id="tchips"><button>Ответ:</button><button>Проверка:</button><button>Решение:</button><button>Дано:</button><button>ост.</button><button>Пример</button></div>
+  <div class="seg" id="tsz"><button data-z="3.4">Мелко</button><button data-z="4.4" class="on">Обычно</button><button data-z="6.2">Крупно</button></div>
+  <div class="row3"><button id="tok" class="pri">Готово</button><button id="tdel" hidden>Удалить</button><button id="tcan">Отмена</button></div>
+  <p class="mut" style="margin:6px 0 0">Цифры и знаки можно набирать и кнопками боковой панели. Enter — готово.</p>
+</div>
+<div class="modal" id="help" hidden><div class="mbox help">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><h3 style="margin:0;font-size:18px">Инструкция «Запись примеров столбиком»</h3><button id="helpX">Закрыть</button></div>
+  <div class="hbody">
+  <h4>О программе</h4>
+  <p><b>«Запись примеров столбиком»</b> — это тетрадный лист в клетку (А5 или А4), на котором школьные примеры по математике записываются столбиком так же, как в обычной тетради. Программа <b>ничего не решает и не вычисляет автоматически</b>: она не калькулятор и не проверяет ответы. Её задача — помочь быстро и аккуратно <b>записать</b> пример: ровно расставить числа по разрядам, поставить знак действия и черты. Решает пример сам ученик.</p>
+  <h4>Для кого и чем полезна</h4>
+  <ul>
+    <li><b>Для ребят с ОВЗ</b>, которым сложно или долго самостоятельно писать школьные математические примеры на бумаге, но которые могут пользоваться мышкой и/или клавиатурой. В программе они могут записать пример быстро и качественно, не тратя силы на ровный почерк и подсчёт клеток, и сосредоточиться на самом решении.</li>
+    <li><b>Для учителей и репетиторов.</b> Можно быстро подготовить лист с примерами («Дай пример» и «Ввод строкой» раскладывают сразу несколько примеров по листу), показать образец правильной записи столбиком, сохранить лист в PDF, PNG или Word, распечатать его или отправить ученику файлом. Работу ученика можно сохранить в файл и открыть снова.</li>
+  </ul>
+  <h4>Три способа записать пример</h4>
+  <ol>
+    <li><b>Самостоятельный ввод.</b> Ученик ставит курсор в клетку и вводит цифры и знаки кнопками панели или с клавиатуры. Черту под знаком программа проводит сама (её можно отключить), а любые другие линии рисуются инструментом «Черта».</li>
+    <li><b>Ввод с помощью кнопок шаблона.</b> Кнопки «+ Сложение», «− Вычитание», «× Умножение» и «: Деление» ставят знак и черты нужной длины, а числа ученик вписывает сам.</li>
+    <li><b>Автоматический ввод.</b> В специальном поле «⌨ Ввод строкой» ребёнок вводит пример в одну строку (например, 345+78), и он сам записывается столбиком на листе. Ответ при этом по-прежнему пишет ученик. Кроме того, кнопка «Дай пример» подбирает пример нужного типа и сложности.</li>
+  </ol>
+  <p>Красная вертикальная линия — поле тетради; её положение (справа, слева, с обеих сторон или без поля) выбирается во «Виде», там же формат листа: А5 или А4.</p>
+  <h4>Быстрый старт</h4>
+  <ol>
+    <li>Нажмите на любую клетку листа. Она получит оранжевую рамку, а её колонка — жёлтую полосу (так легче держать разряды ровно).</li>
+    <li>Вводите цифры кнопками боковой панели или с клавиатуры.</li>
+    <li>После каждой цифры курсор сам сдвигается. Направление задаётся в мини-разделе «После ввода идти» на верхней панели: → ← ↓ ↑. Результат сложения удобно писать справа налево, поэтому выберите ←.</li>
+    <li>Черту проводит инструмент «Черта»: клик — черта под клеткой, протяжка — линия любой длины по линиям клеток.</li>
+  </ol>
+  <h4>Боковая панель</h4>
+  <ul>
+    <li><b>Писать</b> — обычный режим: клик выбирает клетку. <b>Черта</b> — рисует линии. <b>Ластик</b> — клик стирает клетку, протяжка вдоль линии стирает линию. <b>Выделить</b> — см. раздел «Выделение и перенос».</li>
+    <li><b>Надпись</b> — для подписей на листе («Ответ:», «Проверка:», номер задания). Нажмите на лист в нужном месте и введите текст с клавиатуры (цифры и знаки можно набирать и кнопками панели, для частых слов есть кнопки-подсказки), выберите размер и нажмите «Готово» или Enter. Нажатие на готовую надпись открывает её для правки или удаления, «Ластик» тоже стирает надпись. Надписи сохраняются в файле и попадают в PDF, PNG и печать.</li>
+    <li><b>Цвет</b> — пять цветов. Новые цифры и линии рисуются выбранным цветом, прежние записи цвет не меняют.</li>
+    <li><b>Цифры и знаки</b>: 0–9, + − × :, запятая, =, скобки. «пропуск» двигает курсор без записи, ⌫ стирает и отступает назад.</li>
+    <li><b>Малая цифра</b> — включите галочку, и цифра встанет маленькой в левый верхний угол клетки. Так пишут перенос при сложении и заём при вычитании. Курсор при этом не двигается. Выключите галочку, чтобы писать обычные цифры.</li>
+    <li><b>Зачеркнуть цифру в клетке</b> — перечёркивает цифру (например, при займе). Повторное нажатие снимает зачёркивание.</li>
+    <li><b>Подсвечивать столбец</b> — включает или выключает жёлтую полосу.</li>
+    <li><b>Повернуть: альбомный лист</b> — одна кнопка переключает лист между книжным и альбомным положением; её название показывает, во что лист повернётся («Повернуть: книжный лист» — обратно). Записи остаются на своих клетках: если лист стал короче, часть записей может оказаться за его границей, а при обратном повороте они появятся снова. PDF, печать и PNG делаются в выбранном положении.</li>
+    <li><b>Листы</b> — внизу панели: вкладки 1, 2, 3… и «+» для нового листа (до 12). «Удалить этот лист» удаляет текущий лист и просит подтвердить повторным нажатием.</li>
+  </ul>
+  <h4>Шапка (верхняя панель)</h4>
+  <p>Название программы слева, кнопки справа.</p>
+  <ul>
+    <li><b>↶ Отменить / ↷ Вернуть</b> — отменить и вернуть действие (Ctrl+Z, Ctrl+Y). У каждого листа своя история.</li>
+    <li><b>Очистить</b> — нажмите дважды: первый раз программа просит подтверждение.</li>
+    <li><b>💾 Сохранить</b> — записывает всю работу (все листы) в файл .json, <b>📂 Открыть</b> — загружает такой файл обратно, в том числе на другом компьютере.</li>
+    <li><b>Копировать для Word</b> — копирует лист как картинку. В Word нажмите Ctrl+V (на Mac — Cmd+V). Лист должен вставиться в натуральную величину (А5 — 148×210 мм, А4 — 210×297 мм); если Word вставил иначе, задайте рисунку этот размер в «Формат рисунка → Размер».</li>
+    <li><b>PDF</b> — файл PDF с листом реального размера (А5 или А4, по выбору в «Виде»). <b>Печать</b> — окно печати. И там, и там выберите масштаб 100 % и поля «Нет»: тогда клетка будет ровно 5 мм.</li>
+    <li><b>Скачать PNG</b> — картинка листа (10 точек на миллиметр).</li>
+    <li><b>Дай пример</b> — выберите действие, сколько цифр в числах и нужен ли переход через разряд (перенос или заём), затем «Поставить пример». Пример встанет в столбик от клетки курсора, а курсор окажется там, где начинается ответ. При делении числа подобраны так, что делится без остатка.</li>
+    <li><b>Масштаб</b> — кнопки «−», «100%», «+» в шапке (50–220%). Если лист больше окна, его можно прокручивать.</li>
+    <li><b>Вид</b> — боковая панель слева или справа, формат листа (А5 или А4; он показан рядом с названием программы), красное поле на листе (справа, слева, справа и слева, нет), светлая или тёмная тема окна (лист всегда остаётся светлым).</li>
+    <li><b>?</b> — эта инструкция.</li>
+    <li><b>Ввод строкой</b> — кнопка «⌨ Ввод строкой» во втором ряду, в мини-разделе «Шаблон»: введите пример, например 345+78, 502-187, 46*23 или 1344:12, и нажмите Enter. Знаки можно вводить с клавиатуры как - * /. Можно вставить сразу несколько примеров, каждый с новой строки: они разложатся по листу в несколько колонок. Программа ставит числа по разрядам, знак и черты, а ответ вы пишете сами. Цифры и знаки можно набирать и кнопками боковой панели (мышью): пока окно открыто, они попадают в него, а не на лист. Окно каждый раз открывается пустым, а кнопка «Очистить» стирает набранное. Обычный ручной ввод остаётся, и пользоваться можно чем удобнее.</li>
+    <li><b>Шаблон</b> — мини-раздел во втором ряду шапки. Укажите «Цифр в 1-м числе» (в самом длинном числе или в делимом) и для деления «Цифр в делителе», затем нажмите «+ Сложение», «− Вычитание», «× Умножение» или «: Деление»: от клетки курсора встанут знак и черты, а числа вы пишете сами. Рядом — «После ввода идти»: в какую сторону сдвигается курсор после каждой цифры.</li>
+  </ul>
+  <p>Подсказки и сообщения программы показываются в тонкой строке под листом: она всегда на виду и выделена контрастным цветом.</p>
+  
+  <h4>Как решать столбиком</h4>
+  <p><b>Сложение.</b> Поставьте курсор в клетку правее красного поля. Нажмите «Шаблон», введите цифр в самом длинном числе и выберите «+ Сложение». Первое число пишите в верхней строке, второе — под ним справа от знака: единицы строго под единицами. Курсор окажется в верхней строке; для ответа щёлкните клетку под чертой в самом правом разряде, выберите направление ← и складывайте поразрядно. Если в разряде вышло больше 9, пишите единицы, а десяток запомните малой цифрой над следующим разрядом.</p>
+  <p><b>Вычитание.</b> Шаблон «− Вычитание», затем так же: уменьшаемое сверху, вычитаемое под ним, ответ под чертой справа налево. Если нужно занять десяток, зачеркните цифру («Зачеркнуть цифру в клетке») и поставьте над ней малую цифру — уменьшенное значение; в соседнем разряде добавьте малую единицу к цифре.</p>
+  <p><b>Умножение.</b> Шаблон «× Умножение»: множимое сверху, множитель под ним. Под первой чертой пишите неполные произведения: первое начинается с единиц, каждое следующее сдвигается на клетку влево. Затем инструментом «Черта» проведите вторую черту под последним произведением и ниже запишите сумму.</p>
+  <p><b>Деление уголком.</b> Шаблон «: Деление»: укажите цифр в делимом и в делителе. Делимое пишите слева от вертикальной черты, делитель — справа вверху, частное — под горизонтальной чертой. Под делимым запишите произведение, подчеркните его «Чертой», под ней — остаток, затем «снесите» следующую цифру и продолжайте. Черта под делителем рисуется по числу цифр делителя (в «Вводе строкой» — по большему из делителя и частного); если частное длиннее, дорисуйте её «Чертой». Автоматическая черта под вычитаемым заканчивается там, где кончается вычитаемое, и не заходит ни под делитель, ни под частное.</p>
+  <h4>Автоматическая черта</h4>
+  <p>Напишите первое число, а во второй строке начните со знака +, − или ×: под этой строкой сама появится черта, и она будет расти вместе с числом. Так же черта ставится под вычитаемым при делении уголком. Если стереть такую черту «Ластиком», она вернётся при следующей правке этой строки, поэтому для постоянного отключения снимите галочку «Авточерта под знаком» в боковой панели.</p>
+  <h4>Выделение и перенос</h4>
+  <p>Включите «Выделить» и протяните рамку по клеткам. Потяните рамку, чтобы переместить записанное вместе с чертами. Кнопки «Копир.», «Вырез.», «Вставить», «Стереть» работают с выделенным: вставка идёт в клетку курсора. Удобно, если пример начат не там или не хватило места. Esc снимает выделение.</p>
+  <h4>Сохранение работы</h4>
+  <p>Программа при каждом открытии начинается с чистого листа, поэтому работу, которую нужно сохранить, записывайте кнопкой «💾 Сохранить» и открывайте через «📂 Открыть». Если браузер не разрешает копирование в буфер, используйте «Скачать PNG» и вставьте картинку в Word вручную.</p>
+  <h4>Вид</h4>
+  <p>Во «Виде» выберите положение боковой панели (слева или справа), формат листа (А5 или А4), красное поле на листе (справа, слева, справа и слева или без поля) и тему оформления: светлую или тёмную. Тема меняет только окно программы, а тетрадный лист в клетку всегда светлый, как настоящая бумага. Выбор запоминается.</p>
+  <h4>Клавиатура</h4>
+  <ul>
+    <li>Цифры, + − * / (или : ), запятая или точка, =, скобки — вводят символы. «*» вводит ×, «/» вводит «:», «-» вводит «−».</li>
+    <li>Пробел — пропустить клетку. Backspace — стереть и отступить. Delete — стереть клетку (или выделенное). Enter — на строку вниз.</li>
+    <li>Стрелки — двигают курсор. Esc — закрывает окна и снимает выделение.</li>
+    <li>Ctrl+Z — отменить, Ctrl+Y или Ctrl+Shift+Z — вернуть, Ctrl+C, Ctrl+X, Ctrl+V — копировать, вырезать и вставить выделенное.</li>
+  </ul>
+  <h4>Если что-то не получается</h4>
+  <ul>
+    <li>Ошиблись — «Отменить» вернёт любое действие.</li>
+    <li>Шаблон или пример «не помещается» — выберите клетку выше или левее.</li>
+    <li>Цифры уходят не туда — проверьте направление «После ввода идти» и галочку «Малая цифра».</li>
+  </ul>
+  </div></div></div>
+<script>
+const CS=5;let COLS=29,ROWS=42,OX=1.5,W=148,H=210;
+let cells=new Map(),hl=new Map(),vl=new Map(),sel={r:3,c:4},tool='w',dir='r',small=false,undo=[],k=3,drag=null,clr=0,zoom=1,col=0,redo=[],selRect=null,sdrag=null,clip=null,hcol=true,sheets=[],cur=0,fieldSide='left',texts=[],txEd=null,txSize=4.4;
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),msg=document.getElementById('msg');
+const TXF='Arial,"Helvetica Neue",Helvetica,sans-serif',txm=document.createElement('canvas').getContext('2d');
+const PAL=['#1a2a8a','#1f1f1f','#d32f2f','#1b7f3b','#7b3fb5'];
+const ser=()=>JSON.stringify([[...cells],[...hl],[...vl],texts]);
+function snap(){undo.push(ser());redo.length=0;if(undo.length>120)undo.shift()}
+const toM=x=>new Map(x.map(i=>typeof i==='string'?[i,0]:i));
+function load(s){const[a,b,c,d]=JSON.parse(s);cells=new Map(a);hl=toM(b);vl=toM(c);texts=Array.isArray(d)?d:[]}
+function changed(){persist();draw()}
+function say(t){msg.textContent=t;msg.title=t}
+
+
+function resize(){
+  const mn=document.getElementById('main'),sbh=document.getElementById('sb').offsetHeight+8;
+  const kw=(mn.clientWidth-28)/W,kh=innerWidth>=760?(mn.clientHeight-22-sbh)/H:99;
+  k=Math.max(1,Math.min(kw,kh,5.5))*zoom;
+  const d=devicePixelRatio||1;
+  cv.style.width=W*k+'px';cv.style.height=H*k+'px';document.getElementById('sb').style.width=Math.round(W*k)+'px';
+  cv.width=Math.round(W*k*d);cv.height=Math.round(H*k*d);
+  draw();
+}
+function draw(){paint(ctx,cv.width/W,true)}
+function paint(ctx,s,ui){
+  ctx.setTransform(s,0,0,s,0,0);
+  const ik=i=>PAL[(i||0)%10]||PAL[0];
+  ctx.fillStyle='#fffdf8';ctx.fillRect(0,0,W,H);
+  if(ui&&hcol){ctx.fillStyle='rgba(255,196,0,0.2)';ctx.fillRect(OX+sel.c*CS,0,CS,H)}
+  ctx.strokeStyle='#a9c4e8';ctx.lineWidth=ui?0.9/k:0.15;ctx.beginPath();
+  for(let r=0;r<=ROWS;r++){ctx.moveTo(OX,r*CS);ctx.lineTo(OX+COLS*CS,r*CS)}
+  for(let c=0;c<=COLS;c++){ctx.moveTo(OX+c*CS,0);ctx.lineTo(OX+c*CS,ROWS*CS)}
+  ctx.stroke();
+  // ink lines
+  // красное поле: 3 клетки слева
+  if(fieldSide!=='none'){const ms=fieldSide==='both'?[3,COLS-3]:[fieldSide==='right'?COLS-3:3];ctx.strokeStyle='#e0473f';ctx.lineWidth=ui?Math.max(0.4,1.4/k):0.4;ctx.beginPath();ms.forEach(m=>{ctx.moveTo(OX+m*CS,0);ctx.lineTo(OX+m*CS,ROWS*CS)});ctx.stroke()}
+  ctx.lineWidth=0.55;ctx.lineCap='round';
+  hl.forEach((ci,key)=>{const[r,c]=key.split(',').map(Number);ctx.strokeStyle=ik(ci);ctx.beginPath();ctx.moveTo(OX+c*CS,r*CS);ctx.lineTo(OX+(c+1)*CS,r*CS);ctx.stroke()});
+  vl.forEach((ci,key)=>{const[r,c]=key.split(',').map(Number);ctx.strokeStyle=ik(ci);ctx.beginPath();ctx.moveTo(OX+c*CS,r*CS);ctx.lineTo(OX+c*CS,(r+1)*CS);ctx.stroke()});
+  // cell content
+  cells.forEach((o,key)=>{
+    const[r,c]=key.split(',').map(Number),x=OX+c*CS,y=r*CS;
+    const FN='Arial,"Helvetica Neue",Helvetica,sans-serif';
+    ctx.textBaseline='alphabetic';
+    if(o.t){ctx.fillStyle=ik(o.k);ctx.font='bold 4.7px '+FN;ctx.textAlign='center';ctx.fillText(o.t,x+CS/2,y+4.15)}
+    if(o.s){ctx.fillStyle=ik(o.sk);ctx.font='bold 2.7px '+FN;ctx.textAlign='left';ctx.fillText(o.s,x+0.4,y+2.5)}
+    if(o.x){ctx.strokeStyle=ik(o.k);ctx.lineWidth=0.4;ctx.beginPath();ctx.moveTo(x+0.7,y+4.5);ctx.lineTo(x+4.3,y+0.9);ctx.stroke()}
+  });
+  texts.forEach(o=>{ctx.fillStyle=ik(o.k);ctx.font='bold '+o.z+'px '+TXF;ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText(o.s,o.x,o.y)});
+  if(!ui)return;
+  // cursor
+  ctx.strokeStyle='#ff7a00';ctx.lineWidth=0.45;
+  ctx.strokeRect(OX+sel.c*CS+0.2,sel.r*CS+0.2,CS-0.4,CS-0.4);
+  const SR=sdrag&&!sdrag.m?rectOf(sdrag.a,sdrag.b):selRect;
+  if(SR){let dr=0,dc=0;if(sdrag&&sdrag.m){dr=clamp(sdrag.dr,-SR.r1,ROWS-1-SR.r2);dc=clamp(sdrag.dc,-SR.c1,COLS-1-SR.c2)}
+    const x=OX+(SR.c1+dc)*CS,y=(SR.r1+dr)*CS,w=(SR.c2-SR.c1+1)*CS,h=(SR.r2-SR.r1+1)*CS;
+    ctx.fillStyle='rgba(47,91,216,0.13)';ctx.fillRect(x,y,w,h);ctx.strokeStyle='#2f5bd8';ctx.lineWidth=0.5;ctx.setLineDash([1.2,0.8]);ctx.strokeRect(x,y,w,h);ctx.setLineDash([])}
+  // drag preview
+  if(drag){
+    const sg=segs(drag.a,drag.b);
+    ctx.strokeStyle=tool==='e'?'#e53935':'#ff7a00';ctx.lineWidth=0.7;ctx.setLineDash([1,1]);ctx.beginPath();
+    sg.forEach(([t,key])=>{const[r,c]=key.split(',').map(Number);
+      if(t==='h'){ctx.moveTo(OX+c*CS,r*CS);ctx.lineTo(OX+(c+1)*CS,r*CS)}
+      else{ctx.moveTo(OX+c*CS,r*CS);ctx.lineTo(OX+c*CS,(r+1)*CS)}});
+    ctx.stroke();ctx.setLineDash([]);
+  }
+}
+function segs(a,b){
+  const o=[],dr=b.r-a.r,dc=b.c-a.c;
+  if(!dr&&!dc)return o;
+  if(Math.abs(dc)>=Math.abs(dr)){for(let c=Math.min(a.c,b.c);c<Math.max(a.c,b.c);c++)o.push(['h',a.r+','+c])}
+  else{for(let r=Math.min(a.r,b.r);r<Math.max(a.r,b.r);r++)o.push(['v',r+','+a.c])}
+  return o;
+}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function pt(e){const b=cv.getBoundingClientRect();return{x:(e.clientX-b.left)/k,y:(e.clientY-b.top)/k}}
+const cellAt=p=>({r:clamp(Math.floor(p.y/CS),0,ROWS-1),c:clamp(Math.floor((p.x-OX)/CS),0,COLS-1)});
+const nodeAt=p=>({r:clamp(Math.round(p.y/CS),0,ROWS),c:clamp(Math.round((p.x-OX)/CS),0,COLS)});
+
+cv.addEventListener('pointerdown',e=>{
+  const p=pt(e);
+  if(tool==='w'){sel=cellAt(p);draw();return}
+  if(tool==='s'){e.preventDefault();cv.setPointerCapture(e.pointerId);selDown(cellAt(p));return}
+  if(tool==='t'){e.preventDefault();if(txEd)commitText();openText(p,e);return}
+  e.preventDefault();cv.setPointerCapture(e.pointerId);
+  const n=nodeAt(p);drag={a:n,b:n,cell:cellAt(p),p};draw();
+});
+cv.addEventListener('pointermove',e=>{if(sdrag){selMove(cellAt(pt(e)));return}if(!drag)return;drag.b=nodeAt(pt(e));draw()});
+cv.addEventListener('pointerup',e=>{
+  if(sdrag){selUp();return}
+  if(!drag)return;
+  const d=drag;drag=null;
+  let sg=segs(d.a,d.b);
+  snap();
+  if(!sg.length){
+    if(tool==='l'){sg=[['h',(d.cell.r+1)+','+d.cell.c]]}
+    else{const ti=textHit(d.p);if(ti>=0)texts.splice(ti,1);else{cells.delete(d.cell.r+','+d.cell.c);sel=d.cell;autoRows(d.cell.r)}}
+  }
+  sg.forEach(([t,key])=>{const set=t==='h'?hl:vl;tool==='e'?set.delete(key):set.set(key,col)});
+  changed();
+});
+cv.addEventListener('pointercancel',()=>{drag=null;sdrag=null;draw()});
+
+function move(d){
+  const D={r:[0,1],l:[0,-1],d:[1,0],u:[-1,0]}[d];
+  sel={r:clamp(sel.r+D[0],0,ROWS-1),c:clamp(sel.c+D[1],0,COLS-1)};
+}
+const OPP={r:'l',l:'r',d:'u',u:'d'};
+function put(ch){
+  if(ch===' '){if(!small)move(dir);draw();return}
+  snap();
+  const key=sel.r+','+sel.c,o=cells.get(key)||{};
+  if(small){o.s=ch;o.sk=col}else{o.t=ch;o.k=col}
+  cells.set(key,o);
+  if(!small)autoRows(sel.r);
+  if(!small)move(dir);
+  changed();
+}
+function back(){
+  snap();
+  const key0=sel.r+','+sel.c,o=cells.get(key0);
+  if(!(small&&o&&o.s)&&!(o&&o.t&&!small))move(OPP[dir]);
+  const key=sel.r+','+sel.c,c=cells.get(key);
+  if(c){if(small){delete c.s}else{delete c.t;delete c.x}if(!c.t&&!c.s&&!c.x)cells.delete(key)}
+  autoRows(sel.r);
+  changed();
+}
+function strike(){snap();const key=sel.r+','+sel.c,o=cells.get(key)||{};o.x=!o.x;if(!o.x)delete o.x;if(!o.t&&!o.s&&!o.x)cells.delete(key);else cells.set(key,o);changed()}
+function doUndo(){if(!undo.length){say('Отменять больше нечего.');return}redo.push(ser());load(undo.pop());changed()}
+function doRedo(){if(!redo.length){say('Возвращать нечего.');return}undo.push(ser());load(redo.pop());changed()}
+
+// panel keys
+const KEYS=['7','8','9','+','4','5','6','−','1','2','3','×','0',',','⌫',':','=','␣','(',')'];
+const keysEl=document.getElementById('keys');
+KEYS.forEach(ch=>{
+  const b=document.createElement('button');b.textContent=ch==='␣'?'пропуск':ch;b.dataset.k=ch;
+  if(!/\d/.test(ch))b.className='op';if(ch==='␣')b.classList.add('sm');
+  keysEl.appendChild(b);
+});
+keysEl.addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const ch=b.dataset.k;
+  if(!document.getElementById('txed').hidden){txKey(ch);return}
+  if(!document.getElementById('strBox').hidden){strKey(ch);return}
+  if(ch==='⌫')back();else if(ch==='␣')put(' ');else put(ch);
+});
+function seg(id,attr,fn){
+  const el=document.getElementById(id);
+  el.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+    el.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));fn(b.dataset[attr])});
+}
+seg('tools','t',t=>{if(t!=='t')closeTx();tool=t;cv.style.touchAction=t==='w'?'pan-x pan-y':'none';drag=null;
+  say(t==='l'?'Чёрта: клик — под клеткой, протяжка — линия по линиям клеток.':t==='e'?'Ластик: клик стирает клетку, протяжка вдоль линии стирает её.':t==='s'?'Выделение: протяните рамку по клеткам. Потяните выделенное — оно переместится. Ctrl+C, Ctrl+X, Ctrl+V — копировать, вырезать, вставить.':t==='t'?'Надпись: нажмите на лист в нужном месте и введите текст. Нажатие на готовую надпись открывает её для правки.':'Нажмите на клетку, затем цифры на панели или клавиатуре.')});
+seg('dirs','d',d=>{dir=d});
+cv.style.touchAction='pan-x pan-y';
+document.getElementById('sm').addEventListener('change',e=>{small=e.target.checked});
+document.getElementById('strike').addEventListener('click',strike);
+document.getElementById('undo').addEventListener('click',doUndo);
+document.getElementById('clear').addEventListener('click',e=>{
+  const b=e.currentTarget;
+  if(!clr){clr=setTimeout(()=>{clr=0;b.textContent='Очистить'},3000);b.textContent='Точно очистить?';return}
+  clearTimeout(clr);clr=0;b.textContent='Очистить';
+  snap();cells=new Map();hl=new Map();vl=new Map();texts=[];changed();
+});
+
+// templates: only drawing signs and lines, no calculation
+document.getElementById('ops').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  const op=b.dataset.op,r=sel.r,c=sel.c;
+  const nd=clamp(+document.getElementById('wa').value||4,1,26),nb=clamp(+document.getElementById('wb').value||2,1,12);
+  const wa=op===':'?nd:nd+1,wb=nb;
+  if(op===':'){
+    if(c+wa+wb>COLS||r+2>ROWS){say('Шаблон не помещается — выберите клетку левее или выше.');return}
+    snap();
+    vl.set(r+','+(c+wa),col);vl.set((r+1)+','+(c+wa),col);
+    for(let i=0;i<wb;i++)hl.set((r+1)+','+(c+wa+i),col);
+    sel={r,c};dir='r';
+    say('Делимое пишите слева, делитель — справа от черты, частное — под делителем.');
+  }else{
+    if(c+wa>COLS||r+2>=ROWS){say('Шаблон не помещается — выберите клетку левее или выше.');return}
+    snap();
+    cells.set((r+1)+','+c,{t:op,k:col});
+    for(let i=0;i<wa;i++)hl.set((r+2)+','+(c+i),col);
+    sel={r,c:c+1};dir='r';
+    say('Первое число — в верхней строке, второе — под ним справа от знака. Черта уже проведена.');
+  }
+  document.querySelectorAll('#dirs button').forEach(x=>x.classList.toggle('on',x.dataset.d===dir));
+  changed();
+});
+
+// keyboard
+addEventListener('keydown',e=>{
+  const t=e.target;
+  if((t.tagName==='INPUT'&&t.type!=='checkbox')||t.tagName==='SELECT'||t.tagName==='TEXTAREA')return;
+  if(e.ctrlKey||e.metaKey){const cd=e.code;
+    if(cd==='KeyZ'){e.preventDefault();e.shiftKey?doRedo():doUndo()}
+    else if(cd==='KeyY'){e.preventDefault();doRedo()}
+    else if(cd==='KeyC'&&selRect){e.preventDefault();copySel()}
+    else if(cd==='KeyX'&&selRect){e.preventDefault();cutSel()}
+    else if(cd==='KeyV'&&clip){e.preventDefault();pasteSel()}
+    return}
+  const map={'-':'−','*':'×','/':':','.':',','x':'×','х':'×'};
+  const ch=map[e.key]||e.key;
+  const arrows={ArrowRight:'r',ArrowLeft:'l',ArrowDown:'d',ArrowUp:'u'};
+  if(/^[0-9+−×:,=()]$/.test(ch)){e.preventDefault();put(ch)}
+  else if(e.key===' '){e.preventDefault();put(' ')}
+  else if(e.key==='Backspace'){e.preventDefault();back()}
+  else if(e.key==='Delete'){e.preventDefault();if(selRect)eraseSel();else{snap();cells.delete(sel.r+','+sel.c);autoRows(sel.r);changed()}}
+  else if(e.key==='Escape'){selRect=null;updSelBtns();draw()}
+  else if(arrows[e.key]){e.preventDefault();move(arrows[e.key]);draw()}
+  else if(e.key==='Enter'){e.preventDefault();sel.r=clamp(sel.r+1,0,ROWS-1);draw()}
+});
+document.querySelector('.panel').addEventListener('click',()=>{const a=document.activeElement;if(a&&a.tagName==='BUTTON')a.blur()});
+
+// ===== выделение, листы, файл, генератор =====
+const $=id=>document.getElementById(id);
+const inR=(v,a,b)=>v>=a&&v<=b;
+const rectOf=(a,b)=>({r1:Math.min(a.r,b.r),c1:Math.min(a.c,b.c),r2:Math.max(a.r,b.r),c2:Math.max(a.c,b.c)});
+const inSel=c=>selRect&&c.r>=selRect.r1&&c.r<=selRect.r2&&c.c>=selRect.c1&&c.c<=selRect.c2;
+function selDown(c){if(inSel(c)){sdrag={m:1,a:c,dr:0,dc:0}}else{sdrag={m:0,a:c,b:c};selRect=null}sel=c;updSelBtns();draw()}
+function selMove(c){if(!sdrag)return;if(sdrag.m){sdrag.dr=c.r-sdrag.a.r;sdrag.dc=c.c-sdrag.a.c}else sdrag.b=c;draw()}
+function selUp(){const d=sdrag;sdrag=null;if(!d)return;
+  if(d.m){const dr=clamp(d.dr,-selRect.r1,ROWS-1-selRect.r2),dc=clamp(d.dc,-selRect.c1,COLS-1-selRect.c2);if(dr||dc)moveSel(dr,dc)}
+  else selRect=rectOf(d.a,d.b);
+  updSelBtns();draw()}
+function grab(R){
+  const o={nr:R.r2-R.r1+1,nc:R.c2-R.c1+1,cl:[],hs:[],vs:[]};
+  cells.forEach((v,k)=>{const[r,c]=k.split(',').map(Number);if(inR(r,R.r1,R.r2)&&inR(c,R.c1,R.c2))o.cl.push([r-R.r1,c-R.c1,{...v}])});
+  hl.forEach((v,k)=>{const[r,c]=k.split(',').map(Number);if(inR(r,R.r1+1,R.r2+1)&&inR(c,R.c1,R.c2))o.hs.push([r-R.r1,c-R.c1,v])});
+  vl.forEach((v,k)=>{const[r,c]=k.split(',').map(Number);if(inR(r,R.r1,R.r2)&&inR(c,R.c1+1,R.c2+1))o.vs.push([r-R.r1,c-R.c1,v])});
+  return o}
+function wipe(R){
+  [...cells.keys()].forEach(k=>{const[r,c]=k.split(',').map(Number);if(inR(r,R.r1,R.r2)&&inR(c,R.c1,R.c2))cells.delete(k)});
+  [...hl.keys()].forEach(k=>{const[r,c]=k.split(',').map(Number);if(inR(r,R.r1+1,R.r2+1)&&inR(c,R.c1,R.c2))hl.delete(k)});
+  [...vl.keys()].forEach(k=>{const[r,c]=k.split(',').map(Number);if(inR(r,R.r1,R.r2)&&inR(c,R.c1+1,R.c2+1))vl.delete(k)})}
+function drop(o,r0,c0){
+  o.cl.forEach(([r,c,v])=>{const R=r0+r,C=c0+c;if(inR(R,0,ROWS-1)&&inR(C,0,COLS-1))cells.set(R+','+C,{...v})});
+  o.hs.forEach(([r,c,v])=>{const R=r0+r,C=c0+c;if(inR(R,0,ROWS)&&inR(C,0,COLS-1))hl.set(R+','+C,v)});
+  o.vs.forEach(([r,c,v])=>{const R=r0+r,C=c0+c;if(inR(R,0,ROWS-1)&&inR(C,0,COLS))vl.set(R+','+C,v)})}
+function moveSel(dr,dc){snap();const R=selRect,o=grab(R);wipe(R);
+  const T={r1:R.r1+dr,c1:R.c1+dc,r2:R.r2+dr,c2:R.c2+dc};wipe(T);drop(o,T.r1,T.c1);selRect=T;sel={r:T.r1,c:T.c1};changed()}
+function copySel(){if(!selRect)return;clip=grab(selRect);updSelBtns();say('Скопировано. Поставьте курсор в клетку и нажмите «Вставить».')}
+function cutSel(){if(!selRect)return;snap();clip=grab(selRect);wipe(selRect);updSelBtns();changed();say('Вырезано. «Вставить» поставит это в клетку курсора.')}
+function eraseSel(){if(!selRect)return;snap();wipe(selRect);changed()}
+function pasteSel(){if(!clip)return;
+  const r0=clamp(sel.r,0,ROWS-clip.nr),c0=clamp(sel.c,0,COLS-clip.nc);
+  const T={r1:r0,c1:c0,r2:r0+clip.nr-1,c2:c0+clip.nc-1};
+  snap();wipe(T);drop(clip,r0,c0);selRect=T;updSelBtns();changed()}
+function updSelBtns(){$('sc').disabled=$('sx').disabled=$('sd').disabled=!selRect;$('sp').disabled=!clip}
+$('sc').onclick=copySel;$('sx').onclick=cutSel;$('sp').onclick=pasteSel;$('sd').onclick=eraseSel;
+$('redo').onclick=doRedo;
+$('hc').onchange=e=>{hcol=e.target.checked;draw()};
+// листы
+function sync(){const s=sheets[cur];s.d=ser();s.s=sel;s.u=undo;s.r=redo}
+function persist(){sync()}
+function renderTabs(){const t=$('tabs');t.innerHTML='';
+  sheets.forEach((s,i)=>{const b=document.createElement('button');b.textContent=i+1;b.className=i===cur?'on':'';b.title='Лист '+(i+1);b.onclick=()=>useSheet(i);t.appendChild(b)});
+  const a=document.createElement('button');a.textContent='+';a.title='Новый лист';a.onclick=addSheet;t.appendChild(a)}
+function applySheet(s){if(s.d)load(s.d);else{cells=new Map();hl=new Map();vl=new Map();texts=[]}
+  undo=s.u||(s.u=[]);redo=s.r||(s.r=[]);sel=s.s||{r:3,c:4};selRect=null;sdrag=null;updSelBtns();renderTabs()}
+function useSheet(i){if(i===cur||!sheets[i])return;sync();cur=i;applySheet(sheets[i]);persist();draw()}
+function addSheet(){if(sheets.length>=12){say('Максимум 12 листов.');return}sync();sheets.push({d:null,u:[],r:[],s:{r:3,c:4}});cur=sheets.length-1;applySheet(sheets[cur]);persist();draw()}
+let dsT=0;
+$('dsh').onclick=e=>{const b=e.currentTarget;
+  if(sheets.length<2){say('Это единственный лист. Его можно очистить кнопкой «Очистить лист».');return}
+  if(!dsT){dsT=setTimeout(()=>{dsT=0;b.textContent='Удалить этот лист'},3000);b.textContent='Точно удалить?';return}
+  clearTimeout(dsT);dsT=0;b.textContent='Удалить этот лист';
+  sheets.splice(cur,1);cur=Math.min(cur,sheets.length-1);applySheet(sheets[cur]);persist();draw()};
+// файл
+$('fs').onclick=()=>{sync();saveOut('stolbik-rabota.json',JSON.stringify({app:'stolbik',v:1,cur,sheets:sheets.map(s=>({d:s.d,s:s.s}))}))};
+$('fo').onclick=()=>$('ff').click();
+$('ff').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const b=JSON.parse(await f.text());if(b.app!=='stolbik'||!Array.isArray(b.sheets)||!b.sheets.length)throw 0;
+    sheets=b.sheets.slice(0,12).map(s=>({d:s.d,u:[],r:[],s:s.s}));cur=clamp(b.cur|0,0,sheets.length-1);
+    applySheet(sheets[cur]);persist();draw();say('Работа открыта. Листов: '+sheets.length+'.')}
+  catch(err){say('Не удалось открыть файл: это не сохранение программы «Запись примеров столбиком».')}};
+// генератор примеров
+function setDir(d){dir=d;document.querySelectorAll('#dirs button').forEach(x=>x.classList.toggle('on',x.dataset.d===d))}
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const rn=n=>n<=1?rnd(1,9):rnd(10**(n-1),10**n-1);
+const dg=n=>String(n).split('').reverse().map(Number);
+function carryAdd(a,b){const x=dg(a),y=dg(b);let c=0,any=false;for(let i=0;i<Math.max(x.length,y.length);i++){const s=(x[i]||0)+(y[i]||0)+c;c=s>=10?1:0;if(c)any=true}return any}
+function borrowSub(a,b){const x=dg(a),y=dg(b);let br=0,any=false;for(let i=0;i<x.length;i++){const d=x[i]-br-(y[i]||0);br=d<0?1:0;if(br)any=true}return any}
+function genEx(op,n1,n2,f){
+  if(op===':'){const d=Math.max(2,rn(n2)),q=Math.max(2,rn(Math.max(1,n1-n2)));return[d*q,d]}
+  if(n2>n1)[n1,n2]=[n2,n1];
+  let a=rn(n1),b=rn(n2);
+  for(let t=0;t<600;t++){
+    a=rn(n1);b=rn(n2);
+    if(op==='+'){if(carryAdd(a,b)===f)break}
+    else if(op==='−'){if(a<b)[a,b]=[b,a];if(a===b)continue;if(borrowSub(a,b)===f)break}
+    else{if(b%10!==0&&b!==1)break}
+  }
+  return[a,b]}
+function putNum(r,cEnd,s,kc){[...String(s)].reverse().forEach((ch,i)=>cells.set(r+','+(cEnd-i),{t:ch,k:kc}))}
+['gop','gn1','gn2'].forEach(id=>{$(id).onchange=e=>e.target.blur()});
+// автоматическая черта под знаком + − ×
+let autoOn=true;
+function autoLineRow(r){
+  if(r<1||r>=ROWS)return;
+  const pre=(r+1)+',';
+  [...hl].forEach(([k,v])=>{if(v>=10&&k.startsWith(pre))hl.delete(k)});
+  const tx=(rr,c)=>{const o=cells.get(rr+','+c);return o&&o.t};
+  const vb=(rr,x)=>vl.has(rr+','+x);   // вертикальная черта уголка между клетками x-1 и x
+  for(let c=0;c<COLS;c++){
+    const s=tx(r,c);
+    if(!s||'+−×'.indexOf(s)<0)continue;
+    if(c>0&&tx(r,c-1)&&!vb(r,c))continue;
+    let R=c;while(R+1<COLS&&tx(r,R+1)&&!vb(r,R+1))R++;
+    let aL=-1,aR=-1;
+    for(let x=c;x<=Math.min(COLS-1,R+12);x++)if(/\d/.test(tx(r-1,x)||'')){aL=x;aR=x;break}
+    if(aL<0){c=R;continue}
+    let uL=aL,uR=aR;while(uL>0&&tx(r-1,uL-1))uL--;while(uR+1<COLS&&tx(r-1,uR+1))uR++;
+    let div=false;for(let x=uL+1;x<=uR;x++)if(vb(r-1,x)||vb(r,x)){div=true;break}
+    const ci=(cells.get(r+','+c).k||0)+10;
+    let L,RR;
+    if(div){   // деление уголком: черта только под вычитаемым, до его конца
+      if(R===c){c=R;continue}
+      L=c;RR=R
+    }else{
+      while(aL>0&&tx(r-1,aL-1)&&!vb(r-1,aL))aL--;
+      while(aR+1<COLS&&tx(r-1,aR+1)&&!vb(r-1,aR+1))aR++;
+      L=Math.min(c,aL);RR=Math.max(R,aR)}
+    for(let x=L;x<=RR;x++)hl.set((r+1)+','+x,ci);
+    c=R}
+}
+function autoRows(r){if(autoOn){autoLineRow(r);autoLineRow(r+1)}}
+// раскладка примеров в столбик
+const OPMAP={'+':'+','-':'−','−':'−','–':'−','*':'×','×':'×','x':'×','X':'×','х':'×','Х':'×','/':':',':':':','÷':':'};
+function parseEx(s){const m=s.trim().match(/^(\d{1,12})\s*([+\-−–*×xXхХ\/:÷])\s*(\d{1,12})\s*=?\s*$/);
+  const z=v=>v.replace(/^0+(?=\d)/,'');return m?{a:z(m[1]),op:OPMAP[m[2]],b:z(m[3])}:null}
+function exSize(e){
+  const la=e.a.length,lb=e.b.length;
+  if(e.op===':'){const q=String(Math.floor(Number(e.a)/Math.max(1,Number(e.b)))).length;return{w:la+Math.max(lb,q),h:Math.max(3,2*q+2)}}
+  if(e.op==='×')return{w:la+lb+1,h:lb+3};
+  return{w:Math.max(la,lb)+1,h:3}}
+function drawEx(e,r,c){
+  const la=e.a.length,lb=e.b.length,lc=autoOn?10+col:col;
+  if(e.op===':'){
+    const wb=Math.max(lb,String(Math.floor(Number(e.a)/Math.max(1,Number(e.b)))).length);
+    putNum(r,c+la-1,e.a,col);
+    [...e.b].forEach((ch,i)=>cells.set(r+','+(c+la+i),{t:ch,k:col}));
+    vl.set(r+','+(c+la),col);vl.set((r+1)+','+(c+la),col);
+    for(let i=0;i<wb;i++)hl.set((r+1)+','+(c+la+i),col);
+    return{r:r+1,c:c+la,d:'r'}}
+  const cEnd=c+e.w-1,sc=cEnd-Math.max(la,lb);
+  putNum(r,cEnd,e.a,col);cells.set((r+1)+','+sc,{t:e.op,k:col});putNum(r+1,cEnd,e.b,col);
+  for(let x=sc;x<=cEnd;x++)hl.set((r+2)+','+x,lc);
+  if(e.op==='×'&&lb>1)for(let x=c+1;x<=cEnd;x++)hl.set((r+2+lb)+','+x,col);
+  return{r:r+2,c:cEnd,d:'l'}}
+function placeExamples(list,note){
+  note=note||'';
+  list.forEach(e=>Object.assign(e,exSize(e)));
+  const gap=2,r0=sel.r,c0=sel.c,wMax=Math.max(...list.map(e=>e.w)),hMax=Math.max(...list.map(e=>e.h));
+  if(c0+wMax>COLS){say('Не помещается по ширине — выберите клетку левее.');return}
+  const cols=Math.max(1,Math.floor((COLS-c0+gap)/(wMax+gap)));
+  snap();let n=0,first=null;
+  for(let i=0;i<list.length;i++){
+    const r=r0+Math.floor(i/cols)*(hMax+gap),c=c0+(i%cols)*(wMax+gap);
+    if(r+hMax>ROWS)break;
+    const tg=drawEx(list[i],r,c);if(!first)first=tg;n++}
+  if(!n){undo.pop();say('Не помещается по высоте — выберите клетку выше.');return}
+  sel={r:first.r,c:first.c};setDir(first.d);
+  say(note+(list.length===1?'Пример: '+list[0].a+' '+list[0].op+' '+list[0].b+'. Курсор — там, где начинается ответ.':'Поставлено примеров: '+n+(n<list.length?' из '+list.length+' (остальные не поместились)':'')+'. Курсор — у первого, к остальным переходите кликом.'));
+  changed();return true}
+$('gen').onclick=()=>{
+  const op=$('gop').value;let n1=+$('gn1').value;const n2=+$('gn2').value;
+  if(op===':'&&n2>=n1)n1=n2+1;
+  const[a,b]=genEx(op,n1,n2,$('gcar').checked);
+  placeExamples([{a:String(a),op,b:String(b)}]);
+};
+$('strGo').onclick=()=>{
+  const lines=$('strTx').value.split(/[\n;]+/).map(s=>s.trim()).filter(Boolean);
+  if(!lines.length){say('Введите пример, например: 345+78');return}
+  const ok=[],bad=[];lines.forEach(s=>{const e=parseEx(s);e?ok.push(e):bad.push(s)});
+  if(!ok.length){say('Не понял «'+bad[0]+'». Пишите так: 345+78, 502-187, 46*23, 1344:12 (целые числа).');return}
+  if(ok.some(e=>e.op===':'&&Number(e.b)===0)){say('На ноль делить нельзя.');return}
+  if(placeExamples(ok,bad.length?'Не разобрал: '+bad.join('; ')+'. ':''))closePops()};
+function strKey(ch){
+  const ta=$('strTx');if(!matchMedia('(pointer:coarse)').matches)ta.focus();
+  if(ch==='⌫'){const s=ta.selectionStart,e=ta.selectionEnd;if(s!==e)ta.setRangeText('',s,e,'end');else if(s>0)ta.setRangeText('',s-1,s,'end');return}
+  if(ch==='␣'){ta.setRangeText(' ',ta.selectionStart,ta.selectionEnd,'end');return}
+  if(/^[0-9+−×:=]$/.test(ch)){ta.setRangeText(ch,ta.selectionStart,ta.selectionEnd,'end');return}
+  say('В «Вводе строкой» нужны только целые числа и знаки + − × :')}
+$('strNl').onclick=()=>{const ta=$('strTx');ta.setRangeText('\n',ta.selectionStart,ta.selectionEnd,'end');if(!matchMedia('(pointer:coarse)').matches)ta.focus()};
+$('strClr').onclick=()=>{const ta=$('strTx');ta.value='';if(!matchMedia('(pointer:coarse)').matches)ta.focus()};
+$('strTx').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('strGo').click()}});
+// восстановление работы
+try{localStorage.removeItem('stolbik-book');localStorage.removeItem('stolbik-sheet')}catch(e){}
+// программа всегда открывается с чистого листа (работа сохраняется только в файл)
+sheets=[{d:null,u:[],r:[],s:{r:3,c:4}}];cur=0;applySheet(sheets[0]);
+addEventListener('resize',resize);
+resize();
+// цвета
+const NAMES=['Синий','Чёрный','Красный','Зелёный','Фиолетовый'];
+const swEl=document.getElementById('sw');
+PAL.forEach((c,i)=>{const b=document.createElement('button');b.style.background=c;b.title=NAMES[i];b.setAttribute('aria-label',NAMES[i]);if(!i)b.className='on';
+  b.onclick=()=>{col=i;[...swEl.children].forEach((x,j)=>x.classList.toggle('on',j===i))};swEl.appendChild(b)});
+// масштаб
+function setZoom(z){zoom=clamp(Math.round(z*10)/10,0.5,2.2);document.getElementById('z1').textContent=Math.round(zoom*100)+'%';resize()}
+document.getElementById('zo').onclick=()=>setZoom(zoom-0.2);
+document.getElementById('zi').onclick=()=>setZoom(zoom+0.2);
+document.getElementById('z1').onclick=()=>setZoom(1);
+// экспорт: сохранить, открыть, копировать для Word, PDF, печать, PNG
+function exportCanvas(){const c=document.createElement('canvas');c.width=W*10;c.height=H*10;paint(c.getContext('2d'),10,false);return c}
+const toBlob=(c,t,q)=>new Promise(r=>c.toBlob(r,t,q));
+function crc32(u){let t=crc32.t;if(!t){t=crc32.t=[];for(let n=0;n<256;n++){let c=n;for(let j=0;j<8;j++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}}let r=-1;for(let i=0;i<u.length;i++)r=t[(r^u[i])&255]^(r>>>8);return(r^-1)>>>0}
+function pdf(jpg,w,h){
+  const PW=(W*72/25.4).toFixed(2),PH=(H*72/25.4).toFixed(2);
+  const enc=new TextEncoder(),ch=[],of=[];let len=0;
+  const add=x=>{const u=typeof x==='string'?enc.encode(x):x;ch.push(u);len+=u.length};
+  const obj=(n,b)=>{of[n]=len;add(n+' 0 obj\n'+b+'\nendobj\n')};
+  add('%PDF-1.4\n');
+  obj(1,'<</Type/Catalog/Pages 2 0 R>>');
+  obj(2,'<</Type/Pages/Kids[3 0 R]/Count 1>>');
+  obj(3,'<</Type/Page/Parent 2 0 R/MediaBox[0 0 '+PW+' '+PH+']/Resources<</XObject<</Im0 4 0 R>>>>/Contents 5 0 R>>');
+  of[4]=len;add('4 0 obj\n<</Type/XObject/Subtype/Image/Width '+w+'/Height '+h+'/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length '+jpg.length+'>>\nstream\n');add(jpg);add('\nendstream\nendobj\n');
+  const cs='q '+PW+' 0 0 '+PH+' 0 0 cm /Im0 Do Q';
+  obj(5,'<</Length '+cs.length+'>>\nstream\n'+cs+'\nendstream');
+  const x=len;add('xref\n0 6\n0000000000 65535 f \n');
+  for(let i=1;i<6;i++)add(String(of[i]).padStart(10,'0')+' 00000 n \n');
+  add('trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n'+x+'\n%%EOF');
+  return new Blob(ch,{type:'application/pdf'});
+}
+async function getDl(){try{return window.claude&&claude.use?await claude.use('downloads'):null}catch(e){return null}}
+async function saveOut(name,data,tip){
+  const blob=data instanceof Blob?data:new Blob([data]),d=await getDl();
+  if(d){try{await d.save({filename:name,data:blob});say('Файл готов: '+name+(tip?'. '+tip:''));return}
+    catch(e){if(e&&e.code==='declined'){say('Сохранение отменено.');return}}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),60000);
+  say('Файл «'+name+'» отправлен в загрузки'+(tip?'. '+tip:''))}
+// PNG с разрешением 254 dpi (10 точек на мм): лист вставляется в Word в натуральную величину
+async function pngBlob(){
+  const b=await toBlob(exportCanvas(),'image/png'),u=new Uint8Array(await b.arrayBuffer());
+  const body=new Uint8Array(13);body.set([0x70,0x48,0x59,0x73],0);const bv=new DataView(body.buffer);bv.setUint32(4,10000);bv.setUint32(8,10000);body[12]=1;
+  const ch=new Uint8Array(21),cv2=new DataView(ch.buffer);cv2.setUint32(0,9);ch.set(body,4);cv2.setUint32(17,crc32(body));
+  return new Blob([u.slice(0,33),ch,u.slice(33)],{type:'image/png'})}
+$('dl').onclick=async()=>saveOut('stolbik_'+prefs.format+(prefs.land?'_land':'')+'.png',await pngBlob());
+$('pf').onclick=async()=>{const b=await toBlob(exportCanvas(),'image/jpeg',0.95);
+  saveOut('stolbik_'+prefs.format+(prefs.land?'_land':'')+'.pdf',pdf(new Uint8Array(await b.arrayBuffer()),W*10,H*10),'при печати выберите масштаб 100 % — тогда клетка = 5 мм')};
+$('cp').onclick=async()=>{
+  try{await navigator.clipboard.write([new ClipboardItem({'image/png':await pngBlob()})]);say('Скопировано — вставьте в Word (Ctrl+V)')}
+  catch(e){say('Не удалось скопировать — используйте «Скачать PNG»')}};
+$('pr').onclick=()=>{
+  try{const f=document.createElement('iframe');f.style.cssText='position:fixed;width:0;height:0;border:0';document.body.append(f);
+    const d=f.contentDocument;d.open();
+    d.write('<style>@page{size:'+prefs.format+' '+(prefs.land?'landscape':'portrait')+';margin:0}html,body{margin:0;height:100%;overflow:hidden}img{position:absolute;left:0;top:0;width:'+W+'mm;height:'+H+'mm}</style><img src="'+exportCanvas().toDataURL('image/png')+'">');d.close();
+    const im=d.querySelector('img'),go=()=>{f.contentWindow.onafterprint=()=>f.remove();f.contentWindow.focus();f.contentWindow.print();say('В окне печати выберите масштаб 100 % и поля «Нет»')};
+    im.complete?go():im.onload=go}
+  catch(e){say('Печать недоступна в этом окне — используйте «PDF»')}};
+// ===== надписи на листе =====
+function txW(o){txm.font='bold '+(o.z*10)+'px '+TXF;return txm.measureText(o.s).width/10}
+function textHit(p){for(let i=texts.length-1;i>=0;i--){const o=texts[i],w=txW(o);if(p.x>=o.x-0.6&&p.x<=o.x+w+0.6&&p.y>=o.y-o.z*1.05&&p.y<=o.y+o.z*0.35)return i}return -1}
+function setTxSize(z){txSize=z;[...$('tsz').children].forEach(b=>b.classList.toggle('on',+b.dataset.z===z))}
+function openText(p,e){
+  const i=textHit(p),c=cellAt(p);
+  txEd=i>=0?{i}:{i:-1,x:OX+c.c*CS+0.4,y:(c.r+1)*CS-1};
+  $('tin').value=i>=0?texts[i].s:'';
+  setTxSize(i>=0?texts[i].z:txSize);
+  $('tdel').hidden=i<0;
+  const box=$('txed');box.hidden=false;
+  box.style.left=Math.max(8,Math.min(e.clientX+10,innerWidth-box.offsetWidth-8))+'px';
+  box.style.top=Math.max(8,Math.min(e.clientY+10,innerHeight-box.offsetHeight-8))+'px';
+  $('tin').focus();if(i>=0)setTimeout(()=>{const f=$('tin');f.focus();f.select()},0)}
+function closeTx(){txEd=null;$('txed').hidden=true}
+function commitText(){
+  if(!txEd)return;const s=$('tin').value.trim();
+  if(!s){if(txEd.i>=0){snap();texts.splice(txEd.i,1);changed()}closeTx();return}
+  snap();
+  if(txEd.i>=0){texts[txEd.i].s=s;texts[txEd.i].z=txSize}
+  else texts.push({x:txEd.x,y:txEd.y,s,k:col,z:txSize});
+  changed();closeTx();say('Надпись добавлена. Нажмите на неё, чтобы изменить или удалить.')}
+function txKey(ch){
+  const f=$('tin');f.focus();
+  if(ch==='⌫'){const s=f.selectionStart,e=f.selectionEnd;if(s!==e)f.setRangeText('',s,e,'end');else if(s>0)f.setRangeText('',s-1,s,'end');return}
+  f.setRangeText(ch==='␣'?' ':ch,f.selectionStart,f.selectionEnd,'end')}
+$('tok').onclick=commitText;
+$('tcan').onclick=closeTx;
+$('tdel').onclick=()=>{if(txEd&&txEd.i>=0){snap();texts.splice(txEd.i,1);changed()}closeTx()};
+$('tsz').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setTxSize(+b.dataset.z)});
+$('tchips').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const f=$('tin');f.setRangeText(b.textContent+' ',f.selectionStart,f.selectionEnd,'end');f.focus()});
+$('tin').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commitText()}});
+// выпадающие окна верхней панели
+function closePops(except){document.querySelectorAll('.popbox').forEach(b=>{if(b!==except){b.hidden=true;b.previousElementSibling.setAttribute('aria-expanded','false')}})}
+document.querySelectorAll('.pop').forEach(p=>{
+  const btn=p.querySelector(':scope>button'),box=p.querySelector('.popbox');
+  btn.setAttribute('aria-expanded','false');
+  btn.onclick=e=>{e.stopPropagation();
+    if(!box.hidden){closePops();return}
+    closePops(box);box.hidden=false;btn.setAttribute('aria-expanded','true');{const f=box.querySelector('textarea');if(f){f.value='';if(!matchMedia('(pointer:coarse)').matches)setTimeout(()=>f.focus(),0)}}
+    if(box.classList.contains('right')){box.style.left='auto';box.style.right='0px';if(box.getBoundingClientRect().left<4){box.style.right='auto';box.style.left='0px'}}
+    else{box.style.left='0px';const over=btn.getBoundingClientRect().left+box.offsetWidth+8-innerWidth;box.style.left=(over>0?-over:0)+'px'}};
+  box.addEventListener('click',e=>{if(!box.classList.contains('keep')&&e.target.closest('button'))closePops()});
+});
+addEventListener('click',e=>{if(e.target.closest('.popbox'))return;if(!$('strBox').hidden&&e.target.closest('#keys'))return;closePops()});
+addEventListener('keydown',e=>{if(e.key==='Escape'){closePops();closeTx();$('help').hidden=true}});
+// инструкция
+$('helpBtn').onclick=()=>{$('help').hidden=false};
+$('helpX').onclick=()=>{$('help').hidden=true};
+$('help').addEventListener('click',e=>{if(e.target===$('help'))$('help').hidden=true});
+// вид: сторона панели и тема
+let prefs={side:'right',theme:null,auto:true,field:'left',format:'A5',land:false};
+try{Object.assign(prefs,JSON.parse(localStorage.getItem('stolbik-prefs')||'{}'))}catch(e){}
+if(!['left','right','both','none'].includes(prefs.field))prefs.field='left';
+if(prefs.format!=='A4')prefs.format='A5';
+prefs.land=prefs.land===true;
+if(prefs.theme!=='light'&&prefs.theme!=='dark')prefs.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+function applyPrefs(){
+  document.documentElement.setAttribute('data-theme',prefs.theme);
+  document.querySelector('.app').classList.toggle('rt',prefs.side==='right');
+  autoOn=prefs.auto!==false;$('al').checked=autoOn;fieldSide=prefs.field;
+  {let nW=prefs.format==='A4'?210:148,nH=prefs.format==='A4'?297:210;if(prefs.land)[nW,nH]=[nH,nW];
+    if(nW!==W||nH!==H){W=nW;H=nH;COLS=Math.floor((W-2)/CS);ROWS=Math.floor(H/CS);OX=(W-COLS*CS)/2;
+      sel={r:Math.min(sel.r,ROWS-1),c:Math.min(sel.c,COLS-1)};selRect=null;sdrag=null;updSelBtns();resize();
+      if([...cells.keys()].some(k=>{const[r,c]=k.split(',').map(Number);return r>=ROWS||c>=COLS}))say('Часть записей за границей листа: она появится, если повернуть лист обратно.')}}
+  $('fmt').textContent='· '+(prefs.format==='A4'?'А4':'А5');
+  $('rot').textContent=prefs.land?'Повернуть: книжный лист':'Повернуть: альбомный лист';
+  [['sideSeg',prefs.side],['fieldSeg',prefs.field],['fmtSeg',prefs.format],['themeSeg',prefs.theme]].forEach(([id,v])=>$(id).querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.v===v)));
+  draw()}
+function setPref(k,v){prefs[k]=v;try{localStorage.setItem('stolbik-prefs',JSON.stringify(prefs))}catch(e){}applyPrefs()}
+$('al').addEventListener('change',e=>setPref('auto',e.target.checked));
+$('rot').onclick=()=>setPref('land',!prefs.land);
+$('fmtSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setPref('format',b.dataset.v)});
+$('fieldSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setPref('field',b.dataset.v)});
+$('sideSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setPref('side',b.dataset.v)});
+$('themeSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(b)setPref('theme',b.dataset.v)});
+applyPrefs();
+if(window.ResizeObserver)new ResizeObserver(()=>resize()).observe($('main'));
+document.getElementById('top').addEventListener('click',()=>{const a=document.activeElement;if(a&&a.tagName==='BUTTON')a.blur()});
+</script>
+</body>
+</html>
