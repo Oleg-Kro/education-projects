@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Геометрия на листе</title>
+<style>
+*{box-sizing:border-box}body{margin:0;height:100vh;display:flex;flex-direction:column;font:13px system-ui,"Segoe UI",Arial,sans-serif;background:#e2e8f0;color:#1e293b;user-select:none}
+header{background:#fff;border-bottom:1px solid #cbd5e1;padding:8px 12px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+header h1{font-size:16px;margin:0 auto 0 0}
+button{font:inherit;padding:5px 9px;border:1px solid #cbd5e1;background:#fff;border-radius:7px;cursor:pointer}
+button:hover{background:#f1f5f9}button:disabled{opacity:.4;cursor:default}
+button.on{background:#e0e7ff;border-color:#6366f1;color:#4338ca}
+.pri{background:#4f46e5;color:#fff;border-color:#4f46e5}.pri:hover{background:#4338ca}
+#app{flex:1;display:flex;min-height:0}
+aside{width:270px;background:#fff;border-right:1px solid #cbd5e1;padding:10px;overflow:auto;flex-shrink:0}
+aside h3{font-size:11px;text-transform:uppercase;color:#94a3b8;margin:14px 0 6px}aside h3:first-child{margin-top:0}
+.g{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}.g button{min-width:0;white-space:nowrap;text-align:left;padding:5px 6px;display:flex;align-items:center;gap:6px;font-size:12px;border-radius:9px;transition:.12s}.g button:hover{transform:translateY(-1px);box-shadow:0 2px 6px #0002}.g button.on{box-shadow:0 0 0 2px #6366f1}
+.ic{min-width:22px;padding:0 3px;height:22px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0;box-shadow:inset 0 -2px #0003}
+.sb{grid-column:1/3;display:none;gap:5px;flex-direction:column;padding-left:8px;border-left:3px solid #c7d2fe}.sb.open{display:flex}.sb.two.open{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.sym.open{display:grid;grid-template-columns:repeat(6,minmax(0,1fr))}.sym button{justify-content:center;padding:4px 0;font-size:15px}
+#ed{position:fixed;z-index:8;display:none;align-items:center;gap:6px;background:#fff;border:2px solid #6366f1;border-radius:10px;padding:6px 8px;box-shadow:0 6px 20px #0004;user-select:text}#ed input{font:inherit;font-size:15px;padding:4px 6px;border:1px solid #cbd5e1;border-radius:6px;width:210px}
+label{display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+.cols{display:flex;gap:7px;flex-wrap:wrap}.cols i{width:22px;height:22px;border-radius:50%;border:2px solid #fff;cursor:pointer}.cols i.on{border-color:#4f46e5;box-shadow:0 0 0 2px #c7d2fe}
+main{flex:1;overflow:auto;padding:14px;text-align:center}
+canvas{background:#fff;box-shadow:0 4px 16px #0003;touch-action:none}
+#st{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);background:#1e293bdd;color:#fff;padding:5px 16px;border-radius:99px;font-size:12px;pointer-events:none;max-width:90vw;text-align:center}
+#md{position:fixed;inset:0;background:#0006;display:none;align-items:center;justify-content:center;z-index:9}
+#md div{background:#fff;border-radius:12px;padding:20px;max-width:580px;max-height:85vh;overflow:auto;line-height:1.5;user-select:text}
+#md li{margin:4px 0}
+.vr{margin:8px 0}.vr b{display:block;font-size:11px;text-transform:uppercase;color:#94a3b8;margin-bottom:4px}.sg{display:flex;gap:4px;flex-wrap:wrap}
+#vp{position:fixed;top:54px;right:12px;z-index:7;width:300px;background:#fff;border:1px solid #cbd5e1;border-radius:12px;padding:4px 12px 12px;box-shadow:0 8px 24px #0003;display:none}
+#app.rt{flex-direction:row-reverse}#app.rt aside{border-right:0;border-left:1px solid #cbd5e1}
+body.dk{background:#0f172a;color:#e2e8f0}body.dk header,body.dk aside,body.dk #vp{background:#1e293b;border-color:#334155}body.dk header small{color:#94a3b8!important}
+body.dk button{background:#273449;border-color:#475569;color:#e2e8f0}body.dk button:hover{background:#334155}body.dk .pri{background:#4f46e5;border-color:#4f46e5;color:#fff}body.dk button.on{background:#3730a3;border-color:#818cf8;color:#fff}
+body.dk aside p{color:#cbd5e1!important;background:#334155!important}body.dk #md div,body.dk #ed{background:#1e293b;color:#e2e8f0}body.dk #ed{border-color:#818cf8}body.dk #ed input{background:#0f172a;color:#e2e8f0;border-color:#475569}
+#sh{position:sticky;bottom:-10px;background:#fff;border-top:1px solid #e2e8f0;margin:12px -10px -10px;padding:10px}#tb button{min-width:30px;padding:4px 0;text-align:center}#tb button.add{border-style:dashed;color:#4f46e5;font-weight:700;font-size:15px}body.dk #sh{background:#1e293b;border-color:#334155}
+</style></head><body>
+<header><h1>📐 Геометрия на листе <small id="ti" style="font-weight:400;color:#64748b">· лист A5, клетка 5 мм</small></h1>
+<button id="un" title="Ctrl+Z">↶</button><button id="re" title="Ctrl+Y">↷</button>
+<button id="cl">Очистить</button><button id="bs">💾 Сохранить</button><button id="bo">📂 Открыть</button><input id="fi" type="file" accept=".json" hidden>
+<button id="cp">Копировать для Word</button><button id="pf">PDF</button><button id="pr">Печать</button><button id="dl" class="pri">Скачать PNG</button><button id="vw">Вид ▾</button><button id="hp">?</button></header>
+<div id="app"><aside>
+<h3>Инструменты</h3><div class="g" id="tl"></div>
+<h3>Стиль</h3><div class="cols" id="cs"></div>
+<label>Толщина <span id="lwv">2 px</span></label><input id="lw" type="range" min="1" max="6" value="2" style="width:100%">
+<label>Пунктир <input id="ds" type="checkbox"></label>
+<h3>Лист</h3>
+<label>Сетка <input id="sg" type="checkbox" checked></label>
+<label>Привязка к клеткам <input id="sn" type="checkbox" checked></label>
+<label>Сетка в экспорте <input id="eg" type="checkbox" checked></label>
+<label>Масштаб экрана <span id="zv">100%</span></label><input id="zm" type="range" min="50" max="220" value="100" style="width:100%">
+<button id="or" style="width:100%;margin-top:8px"></button>
+<p style="color:#64748b;font-size:11px;line-height:1.45">1 клетка = 5 мм, 2 клетки = 1 см. Программа всегда открывается с чистого листа — чтобы сохранить работу, нажмите «Сохранить».</p><p style="font-size:11px;line-height:1.45;background:#fef9c3;border-radius:8px;padding:7px 8px;margin:6px 0 0"><b>Для Word:</b> после вставки рисунка откройте «Формат рисунка → Размер» и задайте масштаб <b>50 %</b> по высоте и ширине. Тогда лист будет <span id="wsz">150×210</span> мм, а клетка — 5 мм. Проверьте линейкой: 2 клетки = 1 см. Если размер иной, подберите масштаб: 50 % × 10 мм / (ваши 2 клетки в мм).</p><p style="font-size:11px;line-height:1.45;background:#dcfce7;border-radius:8px;padding:7px 8px;margin:6px 0 0"><b>PDF / печать:</b> кнопки в шапке дают реальный размер листа. В окне печати выберите масштаб <b>100 %</b> («Реальный размер», без полей) — тогда клетка = 5 мм.</p>
+<div id="sh"><h3 style="margin:0 0 6px">Листы (до 10)</h3><div class="sg" id="tb"></div><div class="g" style="margin-top:8px"><button id="sd" style="grid-column:1/3">🗑 Удалить этот лист</button></div></div>
+</aside><main><canvas id="cv"></canvas></main></div>
+<div id="vp"></div>
+<div id="st"></div>
+<div id="ed"><b id="edt" style="font-size:12px;max-width:170px"></b><input id="edi" autocomplete="off"><button id="edo" class="pri">OK</button></div>
+<div id="md"><div><h2 style="margin-top:0">Инструкция</h2><ul>
+<li><b>Выбор (V):</b> тяните точки и подписи; клик по линии или фигуре — выбрать (цвет, толщину и пунктир можно менять); <b>Delete</b> — удалить; <b>двойной клик</b> — переименовать точку или изменить подпись. Подписи точек можно перетаскивать мышью.</li>
+<li><b>Угол (A):</b> 3 клика: сторона, <b>вершина</b>, сторона. Дуга и градусы строятся сами (всегда угол меньше 180°, прямой — квадратик). Двойной клик по подписи — своя надпись (α, x, ?); пустая подпись возвращает автоматическую.</li>
+<li><b>Линейка (R):</b> два клика (можно по существующим точкам) — длина в см и мм. Подпись идёт вдоль линии; в режиме «Выбор» её можно перетащить (сверху, снизу, сбоку). Двойной клик по подписи — изменить текст; пустой текст убирает только подпись («=» вернёт длину). Ластик по подписи тоже убирает только её.</li>
+<li><b>Многоугольник (G):</b> клики по вершинам; замкнуть — клик по первой точке или Enter.</li>
+<li><b>Прямые</b> (кнопка со списком): прямая и луч: кликните две точки — видна только первая (у луча это начало), вторая скрыта. Выберите линию и тяните круглые маркеры на концах, чтобы изменить длину; чтобы повернуть, тяните скрытую точку (в режиме «Выбор» она видна маленьким кружком); коорд. прямая только с положительными числами (N: клик — 0, клик — конец) и с положительными и отрицательными (M: клик — 0, клик — правый конец, клик — левый конец). Концы можно тянуть в режиме «Выбор» — длина меняется. <b>Риска (I, в списке «Прямые»):</b> клик рядом с прямой — число считается от нуля (1 = 2 клетки); двойной клик — изменить число.</li>
+<li><b>Метки равенства:</b> «Сторона» — клик по отрезку или стороне многоугольника (1, 2 или 3 черты; повторный клик убирает метку). «Угол» — три клика, как в инструменте «Угол» (сторона, вершина, сторона), рисуются 1, 2 или 3 дуги без числа. Метки следуют за точками. Если крайние точки метки поставлены на сторонах фигуры, они привязываются к этим сторонам: при движении вершин метка перемещается и меняется вместе с ними.</li>
+<li><b>Точка ▾:</b> «Свободная точка» (P) — в любом месте; «Точка на фигуре» (O) — клик по отрезку, прямой, окружности или стороне многоугольника: точка скользит по фигуре, её можно двигать только вдоль неё и она следует за фигурой.</li>
+<li><b>Символы ▾:</b> нажмите символ, затем кликните по листу — откроется поле для подписи с этим символом (допишите буквы, Enter). Если поле уже открыто, символ вставляется в него. Подписи, названия точек и числа вводятся прямо на листе.</li>
+<li><b>PDF и «Печать»:</b> реальный размер листа выбранного формата. В окне печати выберите масштаб 100 % и поля «Нет» — клетка будет ровно 5 мм.</li>
+<li><b>Построения ▾:</b> биссектриса, медиана и высота. Клики: сначала <b>вершина</b>, потом два конца противоположной стороны. Программа только проводит отрезок и ставит новую точку на стороне (её можно переименовать двойным кликом); длины и углы не подписываются. При движении вершин построение перестраивается.</li>
+<li><b>Листы:</b> внизу панели — номера листов (до 10); кнопка «+» справа от последнего листа добавляет следующий, «Удалить этот лист» удаляет открытый. У каждого листа своя история отмены. «Сохранить» записывает все листы в один файл, «Открыть» загружает все. PNG, PDF и печать работают для текущего листа.</li>
+<li><b>Ластик (E)</b> удаляет объект. <b>Esc</b> — отмена построения. <b>Ctrl+Z / Ctrl+Y</b> работают на любой раскладке.</li>
+<li>Лист: A5 (30×42 клетки) или A4 (42×59), тема, поля и положение панели выбираются в меню «Вид»; сам лист всегда светлый. Лист можно повернуть. «Сохранить» / «Открыть» — файл чертежа. Экспорт PNG в двойном качестве: чтобы клетка в Word была 5 мм, задайте картинке масштаб 50 %.</li></ul>
+<hr style="border:0;border-top:1px solid #cbd5e1;margin:14px 0">
+<div style="font-size:12px;line-height:1.55;color:#64748b;margin-bottom:12px"><div><b>Авторы программы:</b> Олег Крохалев, Маргарита Крохалева.</div>
+<div><b>Связаться с автором:</b> <a href="mailto:krohalev.o.d@gmail.com" style="color:#6366f1">krohalev.o.d@gmail.com</a></div>
+<div style="margin-top:6px">© 2026. Все права на оригинальные материалы и элементы программы, созданные авторами, принадлежат их авторам. Бесплатное использование программы в личных и образовательных целях разрешено. Копирование, распространение и публикация программы или её частей под чужим именем без согласия авторов не допускаются.</div></div>
+<button class="pri" onclick="md.style.display='none'">Понятно</button></div></div>
+<script>
+const C=19,F='system-ui,"Segoe UI",Arial,sans-serif',$=i=>document.getElementById(i),cv=$('cv'),X=cv.getContext('2d'),md=$('md');
+let S={pts:[],els:[],n:0},W=30,H=42,tool='select',col='#1e293b',lw=2,dash=false,grid=true,snap=true,eg=true,zoom=1,tmp=[],sel=null,selP=null,drag=null,mp={x:0,y:0},hist=[],hi=-1,uid=0,ft,pend='',askCb=null,dirty=false,sheets=[{}],cur=0,V={th:'l',mg:'l',sb:'l'};
+const T=[['select','Выбор','V','Тяните точки, подписи точек и концы линий; клик — выбрать, Delete — удалить, двойной клик — переименовать','↖','#6366f1'],['seg','Отрезок','S','Два клика: концы отрезка','╱','#0ea5e9'],['circle','Окружность','C','Клик — центр, клик — точка на окружности','◯','#f59e0b'],['poly','Многоугольник','G','Клики по вершинам; замкнуть — клик по первой точке или Enter','⬠','#10b981'],['angle','Угол','A','Три клика: сторона, ВЕРШИНА, сторона','∠','#a855f7'],['ruler','Линейка','R','Два клика — измерить расстояние','⟷','#14b8a6'],['text','Надпись','T','Клик — добавить надпись','T','#ec4899'],['erase','Ластик','E','Клик по объекту — удалить (по подписи линейки — только подпись)','✕','#64748b']];
+const U=[['line','Прямая','L','Два клика: видна только первая точка, вторая скрыта. Длину меняют круглые маркеры на концах выбранной прямой, направление — скрытая точка','⟷','#3b82f6'],['ray','Луч','K','Клик — начало луча (видимая точка), клик — направление (скрытая точка). Конец меняет круглый маркер выбранного луча','↗','#06b6d4'],['nline','Коорд. прямая (+)','N','Клик — точка 0, клик — конец (только положительные числа)','→','#22c55e'],['nline2','Коорд. прямая (+ и −)','M','Клик — 0, клик — правый конец, клик — левый конец','⇄','#8b5cf6'],['tick','Риска','I','Клик рядом с коорд. прямой — риска с числом','╷','#f97316']];
+const sub=n=>String(n).replace(/\d/g,d=>'₀₁₂₃₄₅₆₇₈₉'[d]),P=i=>S.pts.find(p=>p.id===i),tl=px=>px/(C*zoom);
+const nl=()=>{const i=S.n++;return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[i%26]+(i>25?sub(Math.floor(i/26)):'')};
+const nv=(a,b)=>{const l=Math.hypot(b.x-a.x,b.y-a.y)||1;return{x:(b.x-a.x)/l,y:(b.y-a.y)/l}};
+function pos(e){const r=cv.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H}}
+function sn(g){const m=snap?1:.5,k=(v,M)=>Math.max(m,Math.min(M-m,snap?Math.round(v):v));return{x:k(g.x,W),y:k(g.y,H)}}
+function findPt(g,r,hid){let b,bd=r;S.pts.forEach(p=>{if(p.h&&!hid)return;const d=Math.hypot(p.x-g.x,p.y-g.y);if(d<=bd){bd=d;b=p}});return b}
+function mk(s,l,h){const o=findPt(s,.3);if(o)return o;const p={id:'p'+(++uid),x:s.x,y:s.y,l:h?'':(l??nl()),h:!!h,c:col};S.pts.push(p);return p}
+function dseg(g,a,b,inf){const dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy;let t=l?((g.x-a.x)*dx+(g.y-a.y)*dy)/l:0;if(!inf)t=Math.max(0,Math.min(1,t));return Math.hypot(g.x-a.x-dx*t,g.y-a.y-dy*t)}
+function ang(A,B,K){const a1=Math.atan2(A.y-B.y,A.x-B.x),a2=Math.atan2(K.y-B.y,K.x-B.x);let d=a2-a1;while(d<=-Math.PI)d+=2*Math.PI;while(d>Math.PI)d-=2*Math.PI;return{a1,a2,s:d>=0?a1:a2,sz:Math.abs(d),deg:Math.abs(d)*180/Math.PI}}
+const cm=(a,b)=>{const c=Math.hypot(a.x-b.x,a.y-b.y)/C;return (Math.round(c*5)/10+'').replace('.',',')+' см ('+Math.round(c*5)+' мм)'};
+function ext(a,v){let t=1e9;const m=8,w=W*C,h=H*C;if(v.x>0)t=Math.min(t,(w-m-a.x)/v.x);else if(v.x<0)t=Math.min(t,(m-a.x)/v.x);if(v.y>0)t=Math.min(t,(h-m-a.y)/v.y);else if(v.y<0)t=Math.min(t,(m-a.y)/v.y);return{x:a.x+v.x*t,y:a.y+v.y*t}}
+function arrow(c,v,f){c.save();c.setLineDash([]);c.beginPath();c.moveTo(f.x,f.y);c.lineTo(f.x-v.x*11+v.y*5,f.y-v.y*11-v.x*5);c.lineTo(f.x-v.x*11-v.y*5,f.y-v.y*11+v.x*5);c.closePath();c.fill();c.restore()}
+function el(c,e,hl){const q=e.p.map(P).filter(Boolean).map(p=>({x:p.x*C,y:p.y*C})),[a,b,d]=q,t=e.t;c.save();c.lineWidth=(e.w||2)+(hl?2:0);c.strokeStyle=c.fillStyle=hl?'#6366f1':e.c;c.setLineDash(e.d?[6,4]:[]);c.font='500 13px '+F;c.textAlign='center';c.textBaseline='middle';c.beginPath();
+if(t=='seg'&&b){c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke()}
+else if((t=='line'||t=='ray')&&b){const[A,B]=lx(e,a,b,C);c.moveTo(A.x,A.y);c.lineTo(B.x,B.y);c.stroke();if(hl){c.setLineDash([]);c.fillStyle='#fff';(t=='ray'?[B]:[A,B]).forEach(p=>{c.beginPath();c.arc(p.x,p.y,4.5,0,7);c.fill();c.stroke()})}}
+else if(t=='nline'&&b){const v=nv(a,b),l=d?Math.hypot(d.x-a.x,d.y-a.y):0,s={x:a.x-v.x*l,y:a.y-v.y*l};c.moveTo(s.x,s.y);c.lineTo(b.x,b.y);c.stroke();arrow(c,v,b)}
+else if(t=='circle'&&b){c.arc(a.x,a.y,Math.hypot(b.x-a.x,b.y-a.y),0,7);c.stroke()}
+else if(t=='poly'&&q.length>2){q.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.closePath();c.globalAlpha=.06;c.fill();c.globalAlpha=1;c.stroke()}
+else if(t=='angle'&&d){const g=ang(a,b,d);if(Math.abs(g.deg-90)<.6){const u={x:Math.cos(g.a1),y:Math.sin(g.a1)},w={x:Math.cos(g.a2),y:Math.sin(g.a2)};c.moveTo(b.x+u.x*13,b.y+u.y*13);c.lineTo(b.x+(u.x+w.x)*13,b.y+(u.y+w.y)*13);c.lineTo(b.x+w.x*13,b.y+w.y*13)}else c.arc(b.x,b.y,22,g.s,g.s+g.sz);c.stroke();const m=g.s+g.sz/2;c.fillText(e.s||Math.round(g.deg)+'°',b.x+Math.cos(m)*38,b.y+Math.sin(m)*38)}
+else if(t=='ruler'&&b){c.setLineDash([4,3]);c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);c.stroke();c.setLineDash([]);[a,b].forEach(p=>{c.beginPath();c.arc(p.x,p.y,3,0,7);c.fill()});if(!e.hide){const u=nv(a,b),n={x:-u.y,y:u.x};let th=Math.atan2(u.y,u.x);if(th>Math.PI/2||th<-Math.PI/2)th+=Math.PI;c.font='600 12px '+F;c.save();c.translate((a.x+b.x)/2+u.x*(e.lu||0)*C+n.x*(e.ln??-.6)*C,(a.y+b.y)/2+u.y*(e.lu||0)*C+n.y*(e.ln??-.6)*C);c.rotate(th);c.fillText(e.s||cm(a,b),0,0);c.restore()}}
+else if(t=='tick'&&a){c.setLineDash([]);c.moveTo(a.x-e.nx*5,a.y-e.ny*5);c.lineTo(a.x+e.nx*5,a.y+e.ny*5);c.stroke();c.fillText(e.s,a.x+e.sx*15,a.y+e.sy*15)}
+else if(t=='msd'&&b){const u=nv(a,b),mx=(a.x+b.x)/2,my=(a.y+b.y)/2;c.setLineDash([]);for(let i=0;i<e.n;i++){const o=(i-(e.n-1)/2)*5;c.moveTo(mx+u.x*o-u.y*6,my+u.y*o+u.x*6);c.lineTo(mx+u.x*o+u.y*6,my+u.y*o-u.x*6)}c.stroke()}
+else if(t=='mang'&&d){const g=ang(a,b,d);c.setLineDash([]);for(let i=0;i<e.n;i++){const r=14+i*5;c.moveTo(b.x+Math.cos(g.s)*r,b.y+Math.sin(g.s)*r);c.arc(b.x,b.y,r,g.s,g.s+g.sz)}c.stroke()}
+else if(t=='text'){c.textAlign='left';c.textBaseline='alphabetic';c.font='500 15px '+F;c.fillText(e.s,e.x*C,e.y*C)}
+c.restore()}
+function pt(c,p,ui){const x=p.x*C,y=p.y*C,s=ui&&selP===p;if(p.h){if(ui&&(tool=='select'||tool=='erase'||s)){c.strokeStyle=s?'#6366f1':'#94a3b8';c.lineWidth=s?2:1;c.beginPath();c.arc(x,y,4,0,7);c.stroke()}return}
+c.fillStyle=p.c;c.beginPath();c.arc(x,y,s?6:4,0,7);c.fill();if(s){c.strokeStyle='#6366f1';c.lineWidth=2;c.stroke()}
+if(p.l){const z=p.l=='0';c.font='500 14px '+F;c.fillStyle='#334155';c.textBaseline=z?'top':'alphabetic';c.textAlign=z?'center':'left';c.fillText(p.l,x+(z?0:8)+(p.ox||0)*C,y+(z?6:-8)+(p.oy||0)*C)}}
+function tmpDraw(c){if(!tmp.length)return;const q=tmp.map(p=>({x:p.x*C,y:p.y*C})),m={x:mp.x*C,y:mp.y*C};c.save();c.strokeStyle=col;c.lineWidth=lw;c.setLineDash([5,4]);c.beginPath();
+if(tool=='circle')c.arc(q[0].x,q[0].y,Math.hypot(m.x-q[0].x,m.y-q[0].y),0,7);
+else if(tool=='nline2'&&tmp.length==2){const v=nv(q[0],q[1]),l=Math.hypot(m.x-q[0].x,m.y-q[0].y);c.moveTo(q[0].x-v.x*l,q[0].y-v.y*l);c.lineTo(q[1].x,q[1].y)}
+else{q.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.lineTo(m.x,m.y)}
+c.stroke();if(tool=='ruler'){c.font='600 12px '+F;c.fillStyle=col;c.textAlign='center';c.fillText(cm(q[0],m),(q[0].x+m.x)/2,(q[0].y+m.y)/2-10)}c.restore()}
+function draw(c,g,ui){c.fillStyle='#fff';c.fillRect(0,0,W*C,H*C);
+if(g){c.lineWidth=.5;c.strokeStyle='#cbd5e1';c.beginPath();for(let i=0;i<=W;i++){c.moveTo(i*C,0);c.lineTo(i*C,H*C)}for(let i=0;i<=H;i++){c.moveTo(0,i*C);c.lineTo(W*C,i*C)}c.stroke();c.strokeStyle='#fca5a5';c.lineWidth=1;c.beginPath();if(V.mg=='l'||V.mg=='lr'){c.moveTo(3*C,0);c.lineTo(3*C,H*C)}if(V.mg=='r'||V.mg=='lr'){c.moveTo((W-3)*C,0);c.lineTo((W-3)*C,H*C)}c.stroke()}
+S.els.forEach(e=>el(c,e,ui&&e===sel));S.pts.forEach(p=>pt(c,p,ui));if(ui)tmpDraw(c)}
+const render=()=>{fixOn();X.setTransform(2,0,0,2,0,0);draw(X,grid,true)};
+function fit(){cv.width=W*C*2;cv.height=H*C*2;cv.style.width=W*C*zoom+'px';cv.style.height=H*C*zoom+'px';$('ti').textContent='· лист '+(cur+1)+' из '+sheets.length+', '+(W>45||H>45?'A4':'A5')+', клетка 5 мм';$('wsz').textContent=W*5+'×'+H*5;syncView();$('or').textContent=W>H?'Повернуть: книжный лист':'Повернуть: альбомный лист'}
+function exp(){const t=document.createElement('canvas');t.width=W*C*2;t.height=H*C*2;const c=t.getContext('2d');c.setTransform(2,0,0,2,0,0);draw(c,eg,false);return t}
+function hitEl(g,r){for(let i=S.els.length;i--;){const e=S.els[i],q=e.p.map(P).filter(Boolean),[a,b,d]=q,t=e.t;let ok=false;
+if(t=='seg'||t=='ruler')ok=b&&dseg(g,a,b)<r;
+else if((t=='line'||t=='ray')&&b){const[A,B]=lx(e,a,b,1);ok=dseg(g,A,B)<r}
+else if(t=='nline'&&b){const v=nv(a,b),l=d?Math.hypot(d.x-a.x,d.y-a.y):0;ok=dseg(g,{x:a.x-v.x*l,y:a.y-v.y*l},b)<r}
+else if(t=='circle')ok=b&&Math.abs(Math.hypot(g.x-a.x,g.y-a.y)-Math.hypot(b.x-a.x,b.y-a.y))<r;
+else if(t=='poly')ok=q.some((p,j)=>dseg(g,p,q[(j+1)%q.length])<r);
+else if(t=='angle')ok=d&&Math.hypot(g.x-b.x,g.y-b.y)<2.2;
+else if(t=='msd')ok=b&&Math.hypot(g.x-(a.x+b.x)/2,g.y-(a.y+b.y)/2)<.8;
+else if(t=='mang')ok=d&&Math.abs(Math.hypot(g.x-b.x,g.y-b.y)-(14+(e.n-1)*2.5)/C)<.5;
+else if(t=='tick')ok=a&&Math.hypot(g.x-a.x-e.sx*.8,g.y-a.y-e.sy*.8)<1;
+else if(t=='text')ok=g.x>e.x-.3&&g.x<e.x+e.s.length*.5+.3&&g.y>e.y-1&&g.y<e.y+.4;
+if(ok)return e}}
+function labHit(g){for(let i=S.pts.length;i--;){const p=S.pts[i];if(p.h||!p.l)continue;const z=p.l=='0',w=p.l.length*.5+.3,x0=p.x+(p.ox||0)+(z?-w/2:.3),y0=p.y+(p.oy||0)+(z?.2:-1.2);if(g.x>=x0&&g.x<=x0+w&&g.y>=y0&&g.y<=y0+1)return p}}
+function rg(e){const q=e.p.map(P);if(q.length<2||!q[0]||!q[1])return;const[a,b]=q,u=nv(a,b),n={x:-u.y,y:u.x},l=e.lu||0,m=e.ln??-.6,mx=(a.x+b.x)/2,my=(a.y+b.y)/2;return{u,n,mx,my,cx:mx+u.x*l+n.x*m,cy:my+u.y*l+n.y*m,t:e.s||cm({x:a.x*C,y:a.y*C},{x:b.x*C,y:b.y*C})}}
+function rlHit(g){for(let i=S.els.length;i--;){const e=S.els[i];if(e.t!='ruler'||e.hide)continue;const k=rg(e);if(!k)continue;const dx=g.x-k.cx,dy=g.y-k.cy,w=k.t.length*.21+.3;if(Math.abs(dx*k.u.x+dy*k.u.y)<w&&Math.abs(dx*k.n.x+dy*k.n.y)<.7)return e}}
+function fixNL(){S.els.forEach(e=>{if(e.t!='nline'||e.p.length<3)return;const[a,b,d]=e.p.map(P);if(!a||!b||!d)return;const v=nv(a,b),l=Math.hypot(d.x-a.x,d.y-a.y);d.x=a.x-v.x*l;d.y=a.y-v.y*l})}
+const gc=()=>{const u=new Set(S.els.flatMap(e=>e.p));S.pts=S.pts.filter(p=>!p.h||u.has(p.id))};
+const delPt=p=>{S.els=S.els.filter(e=>!e.p.includes(p.id));S.pts=S.pts.filter(x=>x!==p);gc()};
+const delEl=o=>{S.els=S.els.filter(x=>x!==o);gc()};
+const snapS=()=>JSON.stringify({S,W,H,uid});
+function ui(){$('un').disabled=hi<1;$('re').disabled=hi>=hist.length-1}
+function commit(){const s=snapS();if(hist[hi]!==s){hist=hist.slice(0,hi+1);hist.push(s);if(hist.length>150)hist.shift();hi=hist.length-1;dirty=true}ui()}
+function load(s){const o=JSON.parse(s);S=o.S;S.els.forEach(e=>e.p=e.p||[]);W=o.W;H=o.H;uid=Math.max(uid,o.uid||0);tmp=[];sel=selP=null;fit();render()}
+const undo=()=>{if(hi>0){load(hist[--hi]);ui()}},redo=()=>{if(hi<hist.length-1){load(hist[++hi]);ui()}};
+function hint(){const t=ALL.find(x=>x[0]==tool);$('st').textContent=t[1]+' — '+t[3]}
+function flash(m){$('st').textContent=m;clearTimeout(ft);ft=setTimeout(hint,3500)}
+function setTool(t){pend='';if(tmp.length){tmp=[];gc();commit()}tool=t;tmp=[];if(t!='select')sel=selP=null;document.querySelectorAll('#tl button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));GR.forEach(([l,b,d])=>{const i=l.some(u=>u[0]==t);b.classList.toggle('on',i);if(i)d.classList.add('open')});cv.style.cursor=t=='select'?'default':'crosshair';hint();render()}
+function add(o){S.els.push({id:'e'+(++uid),c:col,w:lw,d:dash,...o});tmp=[];commit();render()}
+function hostAt(g,r){for(let i=S.els.length;i--;){const e=S.els[i],q=e.p.map(P),a=q[0],b=q[1];if(!['seg','line','ray','circle','poly'].includes(e.t)||!a)continue;let ok=0;if(e.t=='circle')ok=b&&Math.abs(Math.hypot(g.x-a.x,g.y-a.y)-Math.hypot(b.x-a.x,b.y-a.y))<r;else if(e.t=='poly')ok=q.some((p,k)=>dseg(g,p,q[(k+1)%q.length])<r);else if((e.t=='line'||e.t=='ray')&&b){const[A,B]=lx(e,a,b,1);ok=dseg(g,A,B)<r}else ok=b&&dseg(g,a,b)<r;if(ok)return e}}
+function proj(p,g){const e=S.els.find(x=>x.id===p.on.e);if(!e)return;const q=e.p.map(P),a=q[0],b=q[1];
+if(e.t=='circle'){if(a)p.on.t=Math.atan2(g.y-a.y,g.x-a.x)}
+else if(e.t=='poly'){let bd=1e9;q.forEach((A,k)=>{const B=q[(k+1)%q.length],dx=B.x-A.x,dy=B.y-A.y,t=Math.max(0,Math.min(1,((g.x-A.x)*dx+(g.y-A.y)*dy)/(dx*dx+dy*dy||1))),d=Math.hypot(g.x-A.x-dx*t,g.y-A.y-dy*t);if(d<bd){bd=d;p.on.k=k;p.on.t=t}})}
+else if(a&&b){const dx=b.x-a.x,dy=b.y-a.y,t=((g.x-a.x)*dx+(g.y-a.y)*dy)/(dx*dx+dy*dy||1);const L=Math.sqrt(dx*dx+dy*dy)||1;p.on.t=e.t=='seg'?Math.max(0,Math.min(1,t)):Math.max(e.t=='ray'?0:-(e.ea??1.5)/L,Math.min(1+(e.eb??1.5)/L,t))}}
+function onPos(p){const e=S.els.find(x=>x.id===p.on.e);if(!e){delete p.on;return}const q=e.p.map(P),a=q[0],b=q[1],t=p.on.t;if(!a)return;
+if(e.t=='circle'){if(!b)return;const r=Math.hypot(b.x-a.x,b.y-a.y);p.x=a.x+r*Math.cos(t);p.y=a.y+r*Math.sin(t)}
+else if(e.t=='poly'){const A=q[p.on.k],B=q[(p.on.k+1)%q.length];if(!A||!B)return;p.x=A.x+(B.x-A.x)*t;p.y=A.y+(B.y-A.y)*t}
+else{if(!b)return;p.x=a.x+(b.x-a.x)*t;p.y=a.y+(b.y-a.y)*t}}
+function lx(e,a,b,k){const v=nv(a,b),ea=(e.t=='ray'?0:e.ea??1.5)*k,eb=(e.eb??1.5)*k;return[{x:a.x-v.x*ea,y:a.y-v.y*ea},{x:b.x+v.x*eb,y:b.y+v.y*eb},v]}
+function leHit(g,r){const e=sel;if(!e||(e.t!='line'&&e.t!='ray'))return;const q=e.p.map(P);if(!q[0]||!q[1])return;const[A,B]=lx(e,q[0],q[1],1);if(e.t=='line'&&Math.hypot(g.x-A.x,g.y-A.y)<r*1.4)return{o:e,end:0};if(Math.hypot(g.x-B.x,g.y-B.y)<r*1.4)return{o:e,end:1}}
+function cnPos(p){const[V,A,B]=p.cn.i.map(P);if(!V||!A||!B){delete p.cn;return}const dx=B.x-A.x,dy=B.y-A.y;let t;if(p.cn.k=='med')t=.5;else if(p.cn.k=='alt')t=((V.x-A.x)*dx+(V.y-A.y)*dy)/(dx*dx+dy*dy||1);else{const a=Math.hypot(V.x-A.x,V.y-A.y),b=Math.hypot(V.x-B.x,V.y-B.y);t=a/((a+b)||1)}p.x=A.x+dx*t;p.y=A.y+dy*t}
+function mkCn(){const[V,A,B]=tmp,D={id:'p'+(++uid),x:0,y:0,l:nl(),h:false,c:col,cn:{k:tool,i:[V.id,A.id,B.id]}};cnPos(D);S.pts.push(D);add({t:'seg',p:[V.id,D.id]})}
+const a4=()=>Math.max(W,H)>45,pgmm=()=>{const b=a4()?[210,297]:[148,210];return W>H?[b[1],b[0]]:b};
+function syncView(){document.body.classList.toggle('dk',V.th=='d');$('app').classList.toggle('rt',V.sb=='r');document.querySelectorAll('#vp button').forEach(b=>b.classList.toggle('on',(b.dataset.k=='fm'?(a4()?'A4':'A5'):V[b.dataset.k])==b.dataset.v))}
+function setView(k,v){if(k=='fm'){if((v=='A4')==a4())return;const d=v=='A4'?[42,59]:[30,42];if(W>H)d.reverse();[W,H]=d;S.pts.forEach(p=>{p.x=Math.min(p.x,W-.5);p.y=Math.min(p.y,H-.5)});fit();render();commit();return}V[k]=v;try{localStorage.setItem('geomView',JSON.stringify(V))}catch(_){}syncView();render()}
+function addSheet(){if(sheets.length>=10)return flash('Не больше 10 листов');syncCur();sheets.push({S:{pts:[],els:[],n:0},W,H,hist:[],hi:-1});goSheet(sheets.length-1,1);commit()}
+function syncCur(){Object.assign(sheets[cur],{S,W,H,hist,hi})}
+function allS(){syncCur();return JSON.stringify({v:2,cur,uid,sheets:sheets.map(x=>({S:x.S,W:x.W,H:x.H}))})}
+function tabs(){const b=$('tb');b.innerHTML='';sheets.forEach((_,i)=>{const x=document.createElement('button');x.textContent=i+1;x.title='Лист '+(i+1);x.className=i==cur?'on':'';x.onclick=()=>goSheet(i);b.append(x)});if(sheets.length<10){const x=document.createElement('button');x.textContent='+';x.title='Добавить следующий лист';x.className='add';x.onclick=addSheet;b.append(x)}$('sd').disabled=sheets.length<2}
+function goSheet(i,skip){if(askCb)endAsk(0);if(!skip)syncCur();cur=i;const sh=sheets[i];S=sh.S;W=sh.W;H=sh.H;hist=sh.hist||[];hi=sh.hi??-1;tmp=[];sel=selP=null;drag=null;if(!hist.length){hist=[snapS()];hi=0}fit();render();ui();tabs()}
+function loadAll(str){const o=JSON.parse(str);if(!o.sheets){load(str);return}sheets=o.sheets.slice(0,10).map(x=>({S:x.S,W:x.W,H:x.H,hist:[],hi:-1}));sheets.forEach(x=>x.S.els.forEach(e=>e.p=e.p||[]));uid=Math.max(uid,o.uid||0);goSheet(Math.min(o.cur||0,sheets.length-1),1)}
+function fixOn(){S.pts.forEach(p=>{if(p.on)onPos(p);if(p.cn)cnPos(p)})}
+function ask(t,df,cb,at){askCb=cb;$('edt').textContent=t;const i=$('edi'),ed=$('ed'),r=cv.getBoundingClientRect();i.value=df||'';ed.style.display='flex';let x=r.left+(at?at.x/W*r.width:r.width/2)+10,y=r.top+(at?at.y/H*r.height:r.height/2)+12;ed.style.left=Math.max(8,Math.min(innerWidth-360,x))+'px';ed.style.top=Math.max(8,Math.min(innerHeight-70,y))+'px';setTimeout(()=>{i.focus();i.setSelectionRange(i.value.length,i.value.length)},0)}
+function endAsk(ok){const cb=askCb;askCb=null;$('ed').style.display='none';if(ok&&cb)cb($('edi').value)}
+function sym(ch){if(askCb){const i=$('edi');i.setRangeText(ch,i.selectionStart,i.selectionEnd,'end');i.focus()}else{setTool('text');pend=ch;flash('Кликните на листе: откроется поле с символом «'+ch+'». Допишите буквы и нажмите Enter')}}
+function edit(o){let df,ttl,at,fn;
+if(o.l!==undefined){ttl='Название точки';df=o.l;at=o;fn=v=>{o.l=v.trim()}}
+else if(o.t=='ruler'){const q=o.p.map(P);ttl='Подпись линейки (пусто — убрать; = — вернуть длину)';df=o.hide?'':o.s||cm({x:q[0].x*C,y:q[0].y*C},{x:q[1].x*C,y:q[1].y*C});at=q[0];fn=v=>{const w=v.trim();if(!w)o.hide=1;else if(w=='='){delete o.hide;delete o.s}else{delete o.hide;o.s=w}}}
+else{ttl=o.t=='text'?'Надпись (пусто — удалить)':'Своя подпись (пусто — автоматическая)';df=o.s||'';at=o.t=='text'?o:(o.p[0]&&P(o.p[0]))||{x:W/2,y:H/2};fn=v=>{if(o.t=='text'&&!v.trim())delEl(o);else if(v.trim()||o.t=='tick')o.s=v.trim();else delete o.s}}
+ask(ttl,df,v=>{fn(v);commit();render()},at)}
+function buildPdf(){const t=exp(),mm=72/25.4,pg=pgmm(),pw=pg[0]*mm,ph=pg[1]*mm,iw=W*5*mm,ih=H*5*mm,jpg=atob(t.toDataURL('image/jpeg',.95).split(',')[1]),f=n=>n.toFixed(2),o=[];
+const cs='q '+f(iw)+' 0 0 '+f(ih)+' '+f((pw-iw)/2)+' '+f((ph-ih)/2)+' cm /I Do Q';
+o[1]='<</Type/Catalog/Pages 2 0 R>>';o[2]='<</Type/Pages/Kids[3 0 R]/Count 1>>';
+o[3]='<</Type/Page/Parent 2 0 R/MediaBox[0 0 '+f(pw)+' '+f(ph)+']/Resources<</XObject<</I 4 0 R>>>>/Contents 5 0 R>>';
+o[4]='<</Type/XObject/Subtype/Image/Width '+t.width+'/Height '+t.height+'/ColorSpace/DeviceRGB/BitsPerComponent 8/Filter/DCTDecode/Length '+jpg.length+'>>\nstream\n'+jpg+'\nendstream';
+o[5]='<</Length '+cs.length+'>>\nstream\n'+cs+'\nendstream';
+let out='%PDF-1.4\n';const xr=[];for(let i=1;i<6;i++){xr[i]=out.length;out+=i+' 0 obj\n'+o[i]+'\nendobj\n'}
+const xs=out.length;out+='xref\n0 6\n0000000000 65535 f \n'+xr.slice(1).map(x=>String(x).padStart(10,'0')+' 00000 n \n').join('')+'trailer\n<</Size 6/Root 1 0 R>>\nstartxref\n'+xs+'\n%%EOF';
+return Uint8Array.from(out,c=>c.charCodeAt(0))}
+function prt(){const f=document.createElement('iframe'),pg=pgmm();f.style.cssText='position:fixed;width:0;height:0;border:0';document.body.append(f);const d=f.contentDocument;d.open();d.write('<style>@page{size:'+(a4()?'A4':'A5')+' '+(W>H?'landscape':'portrait')+';margin:0}html,body{margin:0;height:100%;overflow:hidden}img{position:absolute;left:'+(pg[0]-W*5)/2+'mm;top:'+(pg[1]-H*5)/2+'mm;width:'+W*5+'mm;height:'+H*5+'mm}</style><img src="'+exp().toDataURL('image/png')+'">');d.close();const im=d.querySelector('img'),go=()=>{f.contentWindow.onafterprint=()=>f.remove();f.contentWindow.focus();f.contentWindow.print();flash('В окне печати выберите масштаб 100 % и поля «Нет»')};im.complete?go():im.onload=go}
+function del(){if(selP)delPt(selP);else if(sel)delEl(sel);else return;selP=sel=null;commit();render()}
+cv.onpointerdown=e=>{cv.setPointerCapture(e.pointerId);const g=pos(e),r=tl(9),s=sn(g);if(askCb)endAsk(1);
+if(tool=='select'){const lh=leHit(g,r);if(lh){drag={k:'le',o:lh.o,end:lh.end};render();return}const p=findPt(g,r,1),pl=!p&&labHit(g),rl=!p&&!pl&&rlHit(g);
+if(p){selP=p;sel=null;drag={k:'pt',o:p}}
+else if(pl){selP=pl;sel=null;drag={k:'pl',o:pl,gx:g.x,gy:g.y,ox:pl.ox||0,oy:pl.oy||0}}
+else if(rl){selP=null;sel=rl;drag={k:'rl',o:rl}}
+else{const l=hitEl(g,r);selP=null;sel=l||null;if(l&&l.t=='text')drag={k:'tx',o:l,dx:g.x-l.x,dy:g.y-l.y}}render();return}
+if(tool=='point'){mk(s);commit();render()}
+else if(tool=='text'){const o=hitEl(g,r);if(o&&o.t=='text')return edit(o);const pre=pend;pend='';ask('Надпись',pre,v=>{if(v&&v.trim()){S.els.push({id:'e'+(++uid),t:'text',p:[],x:s.x,y:s.y,c:col,s:v.trim()});commit();render()}},s)}
+else if(tool=='pon'){const h=hostAt(g,r);if(!h)return flash('Кликните по отрезку, прямой, окружности или стороне многоугольника');const p={id:'p'+(++uid),x:0,y:0,l:nl(),h:false,c:col,on:{e:h.id,t:0,k:0}};proj(p,g);onPos(p);S.pts.push(p);commit();render()}
+else if(tool=='erase'){const p=findPt(g,r,1);if(p)delPt(p);else{const rl=rlHit(g);if(rl)rl.hide=1;else{const o=hitEl(g,r);if(o)delEl(o)}}commit();render()}
+else if(tool=='tick'){const n=S.els.filter(x=>x.t=='nline'&&P(x.p[1])).map(x=>{const a=P(x.p[0]),b=P(x.p[1]),d3=x.p[2]&&P(x.p[2]),v=nv(a,b),t=(g.x-a.x)*v.x+(g.y-a.y)*v.y,pl=Math.hypot(b.x-a.x,b.y-a.y),ng=d3?Math.hypot(d3.x-a.x,d3.y-a.y):0;return{a,v,t,pl,ng,d:Math.hypot(g.x-a.x-v.x*t,g.y-a.y-v.y*t)}}).filter(o=>o.d<1.5&&o.t>=-o.ng-.3&&o.t<=o.pl+.3).sort((p,q)=>p.d-q.d)[0];
+if(!n)return flash('Сначала проведите координатную прямую и ставьте риски рядом с ней');
+let t=n.t;if(snap)t=Math.round(t);t=Math.max(-n.ng,Math.min(n.pl,t));if(!t)return;const q={x:n.a.x+n.v.x*t,y:n.a.y+n.v.y*t};
+if(S.els.some(x=>x.t=='tick'&&P(x.p[0])&&Math.hypot(P(x.p[0]).x-q.x,P(x.p[0]).y-q.y)<.1))return;
+const p=mk(q,'',1),nx=-n.v.y,ny=n.v.x,f=Math.abs(n.v.x)>=Math.abs(n.v.y)?(ny>0?1:-1):(nx<0?1:-1);
+add({t:'tick',p:[p.id],nx,ny,sx:nx*f,sy:ny*f,s:(+(t/2).toFixed(1)+'').replace('.',',')})}
+else if(tool.startsWith('ms')){const n=+tool[2];let f;for(let i=S.els.length;i--&&!f;){const e=S.els[i],q=e.p.map(P);if(e.t=='seg'&&q[1]&&dseg(g,q[0],q[1])<r)f=[e.p[0],e.p[1]];else if(e.t=='poly'){const j=q.findIndex((p,k)=>dseg(g,p,q[(k+1)%q.length])<r);if(j>=0)f=[e.p[j],e.p[(j+1)%q.length]]}}
+if(!f)return flash('Кликните по отрезку или по стороне многоугольника');
+const o=S.els.find(x=>x.t=='msd'&&x.p.includes(f[0])&&x.p.includes(f[1]));
+if(o){if(o.n==n)S.els=S.els.filter(x=>x!==o);else o.n=n}else S.els.push({id:'e'+(++uid),t:'msd',p:f,n,c:col,w:lw});
+commit();render()}
+else{const ma=tool.startsWith('ma'),n2=tool=='nline'||tool=='nline2',cn=tool=='bis'||tool=='med'||tool=='alt',need={angle:3,poly:99,nline2:3}[tool]||(ma||cn?3:2),hid=tool=='ruler'||ma||(tool=='circle'||tool=='line'||tool=='ray'||n2)&&tmp.length>0,n0=S.pts.length,p=mk(s,n2&&!tmp.length?'0':undefined,hid);if(S.pts.length>n0&&(ma||tool=='angle')){const h=hostAt(g,r);if(h){p.on={e:h.id,t:0,k:0};proj(p,g);onPos(p)}}
+if(tool=='poly'&&tmp.length>2&&p===tmp[0])return add({t:'poly',p:tmp.map(x=>x.id)});
+if(tmp.includes(p))return render();tmp.push(p);if(tmp.length==need){if(cn)mkCn();else add({t:tool=='nline2'?'nline':ma?'mang':tool,p:tmp.map(x=>x.id),n:ma?+tool[2]:undefined})}else render()}};
+cv.onpointermove=e=>{const g=pos(e);mp=tool=='select'?g:sn(g);if(drag){const d=drag,o=d.o;if(d.k=='tx'){o.x=g.x-d.dx;o.y=g.y-d.dy}else if(d.k=='pl'){o.ox=d.ox+g.x-d.gx;o.oy=d.oy+g.y-d.gy}else if(d.k=='le'){const q=o.p.map(P),a=q[0],b=q[1],v=nv(a,b),L=Math.hypot(b.x-a.x,b.y-a.y),t=(g.x-a.x)*v.x+(g.y-a.y)*v.y;if(d.end==0)o.ea=Math.max(.3,Math.min(60,-t));else o.eb=Math.max(.3,Math.min(60,t-L))}
+else if(d.k=='rl'){const k=rg(o);if(k){const dx=g.x-k.mx,dy=g.y-k.my;o.lu=dx*k.u.x+dy*k.u.y;o.ln=dx*k.n.x+dy*k.n.y}}else if(!o.cn){if(o.on)proj(o,g);else{const s=sn(g);o.x=s.x;o.y=s.y}fixNL()}d.m=1}render()};
+cv.onpointerup=()=>{if(drag&&drag.m)commit();drag=null};
+cv.ondblclick=e=>{if(tool!='select')return;const g=pos(e),r=tl(9),p=findPt(g,r,0)||labHit(g);if(p)return edit(p);const o=rlHit(g)||hitEl(g,r);if(o)edit(o)};
+addEventListener('keydown',e=>{const k=e.code;
+if(e.ctrlKey||e.metaKey){if(k=='KeyZ'){e.preventDefault();e.shiftKey?redo():undo()}else if(k=='KeyY'){e.preventDefault();redo()}return}
+if(k=='Escape'){tmp=[];sel=selP=null;gc();commit();render();return}
+if(k=='Delete'||k=='Backspace'){del();return}
+if(k=='Enter'&&tool=='poly'&&tmp.length>2){add({t:'poly',p:tmp.map(x=>x.id)});return}
+const t=ALL.find(x=>x[2]&&'Key'+x[2]==k);if(t)setTool(t[0])});
+const M=[['ms1','Сторона','','Клик по отрезку или стороне многоугольника — метка равенства: 1 черта (повторный клик — убрать)','|','#e11d48'],['ma1','Угол','','Три клика: сторона, ВЕРШИНА, сторона — метка равных углов: 1 дуга','⌒','#0891b2'],['ms2','Сторона','','Метка равных сторон: 2 черты','||','#e11d48'],['ma2','Угол','','Метка равных углов: 2 дуги','⌒⌒','#0891b2'],['ms3','Сторона','','Метка равных сторон: 3 черты','|||','#e11d48'],['ma3','Угол','','Метка равных углов: 3 дуги','⌒⌒⌒','#0891b2']];
+const PT=[['point','Свободная точка','P','Клик — поставить точку в любом месте','•','#ef4444'],['pon','Точка на фигуре','O','Клик по отрезку, прямой, окружности или стороне многоугольника — точка, которая скользит по фигуре','⊙','#f97316']];
+const CN=[['bis','Биссектриса','','Клики: ВЕРШИНА, затем два конца противоположной стороны — проводится биссектриса к этой стороне','∢','#0ea5e9'],['med','Медиана','','Клики: ВЕРШИНА, затем два конца противоположной стороны — проводится медиана','▽','#10b981'],['alt','Высота','','Клики: ВЕРШИНА, затем два конца противоположной стороны — проводится высота (перпендикуляр к стороне)','⊥','#f43f5e']];
+const ALL=T.concat(U,M,PT,CN),GR=[];
+const mkb=(t,box)=>{const b=document.createElement('button');b.innerHTML='<span class=ic style="background:'+t[5]+'">'+t[4]+'</span>'+t[1];b.dataset.t=t[0];b.title=t[3]+(t[2]?' ('+t[2]+')':'');b.onclick=()=>setTool(t[0]);box.append(b)};
+const mkg=(id,lab,ic,co,list,two)=>{const b=document.createElement('button'),d=document.createElement('div');b.id=id;b.style.gridColumn='1/3';b.innerHTML='<span class=ic style="background:'+co+'">'+ic+'</span>'+lab+' ▾';d.className='sb'+(two?' two':'');b.onclick=()=>d.classList.toggle('open');$('tl').append(b,d);list.forEach(t=>mkb(t,d));GR.push([list,b,d])};
+T.forEach((t,i)=>{mkb(t,$('tl'));if(i==1)mkg('gp','Точка','•','#ef4444',PT)});
+mkg('gb','Прямые','≡','#3b82f6',U);mkg('gm','Метки равенства','‖','#e11d48',M,1);mkg('gk','Построения','✦','#14b8a6',CN);
+{const b=document.createElement('button'),d=document.createElement('div');b.style.gridColumn='1/3';b.innerHTML='<span class=ic style="background:#0d9488">Ω</span>Символы ▾';d.className='sb sym';b.onclick=()=>d.classList.toggle('open');$('tl').append(b,d);
+'∠ △ ⊥ ∥ ≅ ∼ α β γ δ φ θ π ° √ ² ³ · ≈ ≠ ≤ ≥ ∈ ⌒ → ⇒ ∪ ∩ ∞ Δ ∘'.split(' ').forEach(ch=>{const x=document.createElement('button');x.textContent=ch;x.title='Вставить «'+ch+'»';x.onmousedown=e=>e.preventDefault();x.onclick=()=>sym(ch);d.append(x)})}
+['#1e293b','#2563eb','#dc2626','#16a34a','#d97706','#9333ea'].forEach((k,i)=>{const b=document.createElement('i');b.style.background=k;if(!i)b.className='on';b.onclick=()=>{col=k;[...$('cs').children].forEach(x=>x.className='');b.className='on';if(sel||selP){(sel||selP).c=k;commit();render()}};$('cs').append(b)});
+$('lw').oninput=e=>{lw=+e.target.value;$('lwv').textContent=lw+' px';if(sel){sel.w=lw;render()}};$('lw').onchange=()=>sel&&commit();
+$('ds').onchange=e=>{dash=e.target.checked;if(sel){sel.d=dash;commit();render()}};
+$('sg').onchange=e=>{grid=e.target.checked;render()};$('sn').onchange=e=>snap=e.target.checked;$('eg').onchange=e=>eg=e.target.checked;
+$('zm').oninput=e=>{zoom=e.target.value/100;$('zv').textContent=e.target.value+'%';fit();render()};
+$('or').onclick=()=>{[W,H]=[H,W];S.pts.forEach(p=>{p.x=Math.min(p.x,W-.5);p.y=Math.min(p.y,H-.5)});fit();render();commit()};
+$('sd').onclick=()=>{if(sheets.length<2)return flash('Единственный лист удалить нельзя — его можно очистить');if(!confirm('Удалить лист '+(cur+1)+'?'))return;sheets.splice(cur,1);goSheet(Math.min(cur,sheets.length-1),1);commit()};
+$('un').onclick=undo;$('re').onclick=redo;$('hp').onclick=()=>md.style.display='flex';md.onclick=e=>{if(e.target===md)md.style.display='none'};
+$('cl').onclick=()=>{if(confirm('Очистить этот лист?')){S={pts:[],els:[],n:0};tmp=[];sel=selP=null;commit();render()}};
+$('bs').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([allS()],{type:'application/json'}));a.download='чертёж.json';a.click();dirty=false};
+$('bo').onclick=()=>$('fi').click();
+$('fi').onchange=e=>{const f=e.target.files[0];if(!f)return;f.text().then(t=>{loadAll(t);commit();dirty=false}).catch(()=>flash('Не удалось открыть файл'));e.target.value=''};
+$('pf').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([buildPdf()],{type:'application/pdf'}));a.download='чертёж_'+(a4()?'A4':'A5')+'.pdf';a.click();flash('PDF: при печати выберите масштаб 100 % — тогда клетка = 5 мм')};$('pr').onclick=prt;
+$('edi').onkeydown=e=>{e.stopPropagation();if(e.key=='Enter')endAsk(1);else if(e.key=='Escape')endAsk(0)};$('edo').onclick=()=>endAsk(1);
+$('dl').onclick=()=>{const a=document.createElement('a');a.href=exp().toDataURL('image/png');a.download='chertezh.png';a.click()};
+$('cp').onclick=()=>exp().toBlob(async b=>{try{await navigator.clipboard.write([new ClipboardItem({'image/png':b})]);flash('Скопировано — вставьте в Word (Ctrl+V)')}catch(_){flash('Не удалось скопировать — используйте «Скачать PNG»')}});
+const VO=[['th','Тема',[['l','Светлая'],['d','Тёмная']]],['fm','Формат листа',[['A5','A5'],['A4','A4']]],['mg','Поля (красная линия)',[['l','Слева'],['r','Справа'],['lr','Справа и слева'],['n','Нет']]],['sb','Боковая панель',[['l','Слева'],['r','Справа']]]];
+VO.forEach(([k,lab,opts])=>{const r=document.createElement('div'),g=document.createElement('div');r.className='vr';r.innerHTML='<b>'+lab+'</b>';g.className='sg';opts.forEach(([v,t])=>{const b=document.createElement('button');b.textContent=t;b.dataset.k=k;b.dataset.v=v;b.onclick=()=>setView(k,v);g.append(b)});r.append(g);$('vp').append(r)});
+$('vw').onclick=()=>{const p=$('vp');p.style.display=p.style.display=='block'?'none':'block'};
+addEventListener('pointerdown',e=>{if(!$('vp').contains(e.target)&&e.target!==$('vw'))$('vp').style.display='none'});
+try{Object.assign(V,JSON.parse(localStorage.getItem('geomView')||'{}'))}catch(_){}
+try{localStorage.removeItem('geomA5')}catch(_){}
+tabs();fit();setTool('select');commit();dirty=false;
+addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+</script></body></html>
